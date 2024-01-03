@@ -1,0 +1,23 @@
+# general
+*~
+*.pyc
+\#*\#
+.\#*
+*DS_Store
+out.txt
+slurm-*.out
+tmp*
+.eggs/
+.idea
+.pytest_cache/
+__pycache__/
+check_autopep8
+.coverage
+htmlcov
+coverage.xml*
+shellcheck*
+check_shellcheck*
+.vscode*
+*.vim
+*.swp
+*.nfs*

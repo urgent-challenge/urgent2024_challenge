@@ -48,14 +48,38 @@ python utils/estimate_audio_bandwidth.py \
 
 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/dns5_noise.json \
-   --out_scpfile dns5_noise_resampled.scp \
+   --out_scpfile tmp/dns5_noise_resampled.scp \
    --outdir "${output_dir}/resampled/noise" \
    --resample_type "kaiser_best" \
    --nj 4 \
    --chunksize 1000
+ 
+python - <<'EOF'
+from collections import defaultdict
+
+data = defaultdict(list)
+with open("tmp/dns5_noise_resampled.scp", "r") as f:
+    for line in f:
+        fs = line.strip().split()[1]
+        data[fs].append(line)
+lines_cv = []
+lines_tr = []
+for fs, lst in data.items():
+    lst = sorted(lst)
+    for line in lst[:len(lst) // 8]:
+        lines_cv.append(line)
+    for line in lst[len(lst) // 8:]:
+        lines_tr.append(line)
+with open("dns5_noise_resampled_validation.scp", "w") as f:
+    for line in sorted(lines_cv):
+        f.write(line)
+with open("dns5_noise_resampled_train.scp", "w") as f:
+    for line in sorted(lines_tr):
+        f.write(line)
+EOF
 
 find "${output_dir}/datasets_fullband/impulse_response/" -iname '*.wav' | \
-    awk -F'/' '{fname=substr($NF, 1, length($NF)-4); print(fname" 48000 "$0)}' | \
+    awk -F'/' '{fname=substr($NF, 1, length($NF)-4); fname=$(NF-2)"-"fname; print(fname" 48000 "$0)}' | \
     sort -u > dns5_rirs.scp
 
 #--------------------------------

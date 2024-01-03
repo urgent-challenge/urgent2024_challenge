@@ -58,7 +58,7 @@ def mix_noise(speech_sample, noise_sample, snr=5.0):
         )
     elif len_noise > len_speech:
         offset = np.random.randint(0, len_noise - len_speech)
-        noise_sample = noise_sample[offset : offset + len_speech]
+        noise_sample = noise_sample[:, offset : offset + len_speech]
 
     power_speech = (speech_sample[detect_non_silence(speech_sample)] ** 2).mean()
     power_noise = (noise_sample[detect_non_silence(noise_sample)] ** 2).mean()
@@ -148,7 +148,7 @@ def weighted_sample(population, weights, k, replace=True, rng=np.random):
 def read_audio(filename, force_1ch=False, fs=None):
     audio, fs_ = sf.read(filename, always_2d=True)
     audio = audio[:, :1].T if force_1ch else audio.T
-    if fs != fs_:
+    if fs is not None and fs != fs_:
         audio = librosa.resample(audio, orig_sr=fs_, target_sr=fs)
         return audio, fs
     return audio, fs_
@@ -179,7 +179,7 @@ def main(args):
                 uid, fs, audio_path = line.strip().split()
                 assert uid not in noise_dic[int(fs)], (uid, fs)
                 noise_dic[int(fs)][uid] = audio_path
-    used_noise_dic = {fs: {} for fs in fs in noise_dic.keys()}
+    used_noise_dic = {fs: {} for fs in noise_dic.keys()}
 
     rir_dic = None
     if args.rir_scps is not None and args.prob_reverberation > 0.0:
@@ -190,7 +190,7 @@ def main(args):
                     uid, fs, audio_path = line.strip().split()
                     assert uid not in rir_dic[int(fs)], (uid, fs)
                     rir_dic[int(fs)][uid] = audio_path
-    used_rir_dic = {fs: {} for fs in fs in rir_dic.keys()}
+    used_rir_dic = {fs: {} for fs in rir_dic.keys()}
 
     f = open(Path(args.log_dir) / "meta.tsv", "w")
     headers = ["id", "noisy_path", "speech_uid", "clean_path", "noise_uid"]
@@ -229,7 +229,7 @@ def main(args):
                     store_noise=args.store_noise,
                     rir_dic=rir_dic,
                     used_rir_dic=used_rir_dic,
-                    augmentations=augmentations[n],
+                    augmentation=augmentations[n],
                     force_1ch=True,
                 )
                 count += 1
@@ -282,13 +282,13 @@ def process_one_sample(
         raise ValueError(f"Noise sample not found for fs={fs}+ Hz")
     noise_sample = read_audio(noise, force_1ch=force_1ch, fs=fs)[0]
     snr = np.random.uniform(*snr_range)
-    noisy_speech = mix_noise(speech, noise_sample, snr=snr)
+    noisy_speech, noise_sample = mix_noise(speech, noise_sample, snr=snr)
 
     # select a room impulse response (RIR)
     if (
         rir_dic is None
         or args.prob_reverberation <= 0.0
-        or np.random.random.rand() <= args.prob_reverberation
+        or np.random.rand() <= args.prob_reverberation
     ):
         rir_uid, rir = None, None
     else:
@@ -385,20 +385,17 @@ def get_parser(parser=None):
     group.add_argument(
         "--speech_scps",
         type=str,
-        required=True,
         nargs="+",
         help="Path to the scp file containing speech samples",
     )
     group.add_argument(
         "--log_dir",
         type=str,
-        required=True,
         help="Log directory for storing log and scp files",
     )
     group.add_argument(
         "--output_dir",
         type=str,
-        required=True,
         help="Output directory for storing processed audio files",
     )
     group.add_argument(
@@ -415,7 +412,6 @@ def get_parser(parser=None):
     group.add_argument(
         "--noise_scps",
         type=str,
-        required=True,
         nargs="+",
         help="Path to the scp file containing noise samples",
     )
@@ -494,11 +490,14 @@ def get_parser(parser=None):
         default=0.9,
         help="Higher quantile in clipping",
     )
+    parser.set_defaults(required=["speech_scps", "log_dir", "output_dir", "noise_scps"])
+    return parser
 
 
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
+    print(args)
 
     if args.prob_reverberation > 0:
         assert args.rir_scps
