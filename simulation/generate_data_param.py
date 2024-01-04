@@ -5,11 +5,9 @@ from pathlib import Path
 
 import librosa
 import numpy as np
-import scipy
 import soundfile as sf
 from tqdm import tqdm
 
-from espnet2.train.preprocessor import detect_non_silence
 from espnet2.utils import config_argparse
 from espnet2.utils.types import str2bool
 
@@ -22,11 +20,11 @@ RESAMPLE_METHODS = (
     "kaiser_fast",
     "scipy",
     "polyphase",
-    "linear",
-    "zero_order_hold",
-    "sinc_best",
-    "sinc_fastest",
-    "sinc_medium",
+    #    "linear",
+    #    "zero_order_hold",
+    #    "sinc_best",
+    #    "sinc_fastest",
+    #    "sinc_medium",
 )
 
 AUGMENTATIONS = ("bandwidth_limitation", "clipping")
@@ -35,62 +33,14 @@ AUGMENTATIONS = ("bandwidth_limitation", "clipping")
 #############################
 # Augmentations per sample
 #############################
-def mix_noise(speech_sample, noise_sample, snr=5.0):
-    """Mix the speech sample with an additive noise sample at a given SNR.
-
-    Args:
-        speech_sample (np.ndarray): a single speech sample (Channel, Time)
-        noise_sample (np.ndarray): a single noise sample (Channel, Time)
-        snr (float): signal-to-nosie ratio (SNR) in dB
-    Returns:
-        noisy_sample (np.ndarray): output noisy sample (Channel, Time)
-        noise (np.ndarray): scaled noise sample (Channel, Time)
-    """
-    len_speech = speech_sample.shape[-1]
-    len_noise = noise_sample.shape[-1]
-    if len_noise < len_speech:
-        offset = np.random.randint(0, len_speech - len_noise)
-        # Repeat noise
-        noise_sample = np.pad(
-            noise_sample,
-            [(0, 0), (offset, len_speech - len_noise - offset)],
-            mode="wrap",
-        )
-    elif len_noise > len_speech:
-        offset = np.random.randint(0, len_noise - len_speech)
-        noise_sample = noise_sample[:, offset : offset + len_speech]
-
-    power_speech = (speech_sample[detect_non_silence(speech_sample)] ** 2).mean()
-    power_noise = (noise_sample[detect_non_silence(noise_sample)] ** 2).mean()
-    scale = 10 ** (-snr / 20) * np.sqrt(power_speech) / np.sqrt(max(power_noise, 1e-10))
-    noise = scale * noise_sample
-    noisy_speech = speech_sample + noise
-    return noisy_speech, noise
-
-
-def add_reverberation(speech_sample, rir_sample):
-    """Mix the speech sample with an additive noise sample at a given SNR.
-
-    Args:
-        speech_sample (np.ndarray): a single speech sample (1, Time)
-        rir_sample (np.ndarray): a single room impulse response (RIR) (Channel, Time)
-    Returns:
-        reverberant_sample (np.ndarray): output noisy sample (Channel, Time)
-    """
-    reverberant_sample = scipy.signal.convolve(speech_sample, rir_sample, mode="full")
-    return reverberant_sample[:, : speech_sample.shape[1]]
-
-
-def bandwidth_limitation(speech_sample, fs: int = 16000, res_type="random"):
+def bandwidth_limitation(fs: int = 16000, res_type="random"):
     """Apply the bandwidth limitation distortion to the input signal.
 
     Args:
-        speech_sample (np.ndarray): a single speech sample (1, Time)
         fs (int): sampling rate in Hz
         res_type (str): resampling method
 
     Returns:
-        ret (np.ndarray): bandwidth-limited speech sample (1, Time)
         res_type (str): adopted resampling method
         fs_new (int): effective sampling rate in Hz
     """
@@ -99,40 +49,12 @@ def bandwidth_limitation(speech_sample, fs: int = 16000, res_type="random"):
     if fs_opts:
         if res_type == "random":
             res_type = np.random.choice(RESAMPLE_METHODS)
-        fs_new = np.random.choice(SAMPLE_RATES)
+        fs_new = np.random.choice(fs_opts)
         opts = {"res_type": res_type}
-        ret = librosa.resample(speech_sample, orig_sr=fs, target_sr=fs_new, **opts)
-        # resample back to the original sampling rate
-        ret = librosa.resample(ret, orig_sr=fs_new, target_sr=fs, **opts)
     else:
-        ret = speech_sample
         res_type = "none"
         fs_new = fs
-    return ret, res_type, fs_new
-
-
-def clipping(speech_sample, min_quantile: float = 0.0, max_quantile: float = 0.9):
-    """Apply the clipping distortion to the input signal.
-
-    Args:
-        speech_sample (np.ndarray): a single speech sample (1, Time)
-        min_quantile (float): lower bound on the total percent of samples to be clipped
-        max_quantile (float): upper bound on the total percent of samples to be clipped
-
-    Returns:
-        ret (np.ndarray): clipped speech sample (1, Time)
-    """
-    q = np.array([min_quantile, max_quantile])
-    min_, max_ = np.quantile(speech_sample, q, axis=-1, keepdims=False)
-    # per-channel clipping
-    ret = np.stack(
-        [
-            np.clip(speech_sample[i], min_[i], max_[i])
-            for i in range(speech_sample.shape[0])
-        ],
-        axis=0,
-    )
-    return ret
+    return res_type, fs_new
 
 
 def weighted_sample(population, weights, k, replace=True, rng=np.random):
@@ -205,7 +127,8 @@ def main(args):
     for fs in sorted(speech_dic.keys(), reverse=True):
         for uid, audio_path in tqdm(speech_dic[fs].items()):
             # Load speech sample (Channel, Time)
-            speech = read_audio(audio_path, force_1ch=True)[0]
+            with sf.SoundFile(audio_path) as af:
+                speech_length = af.frames
 
             # Select an additional augmentation for each repeat
             opts = {
@@ -221,7 +144,7 @@ def main(args):
             for n in range(args.repeat_per_utt):
                 info = process_one_sample(
                     args,
-                    speech,
+                    speech_length,
                     fs,
                     noise_dic=noise_dic,
                     used_noise_dic=used_noise_dic,
@@ -234,12 +157,6 @@ def main(args):
                 )
                 count += 1
                 filename = f"fileid_{count}.wav"
-                save_audio(
-                    info["clean_speech"], outdir / "clean" / filename, info["fs"]
-                )
-                save_audio(
-                    info["noisy_speech"], outdir / "noisy" / filename, info["fs"]
-                )
                 lst = [
                     f"fileid_{count}",
                     str(outdir / "noisy" / filename),
@@ -248,7 +165,6 @@ def main(args):
                     info["noise_uid"],
                 ]
                 if args.store_noise:
-                    save_audio(info["noise"], outdir / "noise" / filename, info["fs"])
                     lst.append(str(outdir / "noise" / filename))
                 lst += [
                     str(info["snr"]),
@@ -263,7 +179,7 @@ def main(args):
 
 def process_one_sample(
     args,
-    speech,
+    speech_length,
     fs,
     noise_dic,
     used_noise_dic,
@@ -280,9 +196,7 @@ def process_one_sample(
     )
     if noise_uid is None:
         raise ValueError(f"Noise sample not found for fs={fs}+ Hz")
-    noise_sample = read_audio(noise, force_1ch=force_1ch, fs=fs)[0]
     snr = np.random.uniform(*snr_range)
-    noisy_speech, noise_sample = mix_noise(speech, noise_sample, snr=snr)
 
     # select a room impulse response (RIR)
     if (
@@ -295,41 +209,26 @@ def process_one_sample(
         rir_uid, rir = select_sample(
             fs, rir_dic, used_sample_dic=used_rir_dic, reuse_sample=args.reuse_rir
         )
-        rir_sample = read_audio(rir, force_1ch=force_1ch, fs=fs)[0]
-        noisy_speech = add_reverberation(noisy_speech, rir_sample)
 
     # apply an additional augmentation
     if augmentation == "none":
         pass
     elif augmentation == "bandwidth_limitation":
-        noisy_speech, res_type, fs_new = bandwidth_limitation(
-            speech, fs=fs, res_type="random"
-        )
+        res_type, fs_new = bandwidth_limitation(fs=fs, res_type="random")
         augmentation = augmentation + f"-{res_type}->{fs_new}"
     elif augmentation == "clipping":
-        noisy_speech = clipping(speech)
+        pass
     else:
         raise NotImplementedError(augmentation)
 
-    # normalization
-    scale = 0.9 / max(
-        np.max(np.abs(noisy_speech)),
-        np.max(np.abs(speech)),
-        np.max(np.abs(noise_sample)),
-    )
-
     meta = {
-        "noisy_speech": noisy_speech * scale,
-        "clean_speech": speech * scale,
         "noise_uid": "none" if noise_uid is None else noise_uid,
         "rir_uid": "none" if rir_uid is None else rir_uid,
         "snr": snr,
         "augmentation": augmentation,
         "fs": fs,
-        "length": speech.shape[1],
+        "length": speech_length,
     }
-    if store_noise:
-        meta["noise"] = noise_sample * scale
     return meta
 
 
@@ -347,9 +246,11 @@ def select_sample(fs, sample_dic, used_sample_dic=None, reuse_sample=False):
         for fs2 in fs_opts:
             if fs2 > fs and len(sample_dic[fs2]) > 0:
                 uid = np.random.choice(list(sample_dic[fs2].keys()))
-                sample = sample_dic[fs2].pop(uid)
                 if used_sample_dic is not None:
+                    sample = sample_dic[fs2].pop(uid)
                     used_sample_dic[fs2][uid] = sample
+                else:
+                    sample = sample_dic[fs2][uid]
                 break
         else:
             if reuse_sample:
@@ -357,9 +258,11 @@ def select_sample(fs, sample_dic, used_sample_dic=None, reuse_sample=False):
             return None, None
     else:
         uid = np.random.choice(list(sample_dic[fs].keys()))
-        sample = sample_dic[fs].pop(uid)
         if used_sample_dic is not None:
+            sample = sample_dic[fs].pop(uid)
             used_sample_dic[fs][uid] = sample
+        else:
+            sample = sample_dic[fs][uid]
     return uid, sample
 
 

@@ -1,0 +1,35 @@
+speech_scps:
+- dns5_clean_read_speech_resampled_filtered_train.scp
+- libritts_resampled_train.scp
+- vctk_train.scp
+- commonvoice_11.0_en_resampled_filtered_train.scp
+
+log_dir: /path/to/simulation_train/log
+output_dir: /path/to/simulation_train
+repeat_per_utt: 1
+seed: 0
+
+noise_scps:
+- dns5_noise_resampled_train.scp
+- wham_noise_train.scp
+- epic_sounds_noise_resampled_train.scp
+snr_low_bound: -5.0
+snr_high_bound: 20.0
+reuse_noise: true
+store_noise: false
+
+rir_scps:
+- dns5_rirs.scp
+prob_reverberation: 0.5
+reuse_rir: true
+
+augmentations:
+- none
+- bandwidth_limitation
+- clipping
+weight_augmentations:
+- 1.0
+- 1.0
+- 1.0
+clipping_min_quantile: 0.1
+clipping_max_quantile: 0.9

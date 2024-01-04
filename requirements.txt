@@ -1,0 +1,8 @@
+espnet
+librosa
+numpy
+tqdm
+scipy
+samplerate
+soundfile
+torch
