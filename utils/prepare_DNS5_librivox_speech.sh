@@ -55,17 +55,27 @@ python utils/get_dnsmos.py \
     --nsplits 1 \
     --job 1
 
+# remove low-quality samples
 python utils/filter_via_dnsmos.py \
     --scp_path "tmp/dns5_clean_read_speech_resampled.scp" \
     --json_path "tmp/dns5_clean_read_speech_resampled_dnsmos.json" \
     --outfile "tmp/dns5_clean_read_speech_resampled_filtered.scp" \
     --score_name BAK --threshold 3.0
 
-sort -u tmp/dns5_clean_read_speech_resampled_filtered.scp | \
-    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" "spk)}' > tmp/dns5_clean_read_speech_resampled_filtered.utt2spk
-utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered.spk2utt
-head -n 90 tmp/dns5_clean_read_speech_resampled_filtered.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt
-tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
+# remove non-speech samples
+python utils/filter_via_vad.py \
+    --scp_path "tmp/dns5_clean_read_speech_resampled_filtered.scp" \
+    --outfile "tmp/dns5_clean_read_speech_resampled_filtered_vad.scp" \
+    --vad_mode 2 \
+    --threshold 0.2 \
+    --nj 8 \
+    --chunksize 200
+
+sort -u tmp/dns5_clean_read_speech_resampled_filtered_vad.scp | \
+    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" "spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
+utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt
+head -n 90 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt
+tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt > dns5_clean_read_speech_resampled_filtered_validation.utt2spk
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt > dns5_clean_read_speech_resampled_filtered_train.utt2spk
 utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_validation.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_validation.scp

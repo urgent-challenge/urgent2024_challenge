@@ -51,6 +51,7 @@ python utils/get_dnsmos.py \
     --nsplits 1 \
     --job 1
 
+# remove low-quality samples
 python utils/filter_via_dnsmos.py \
     --scp_path "tmp/commonvoice_11.0_en_resampled.scp" \
     --json_path "tmp/commonvoice_11.0_en_resampled_dnsmos.json" \
@@ -59,13 +60,22 @@ python utils/filter_via_dnsmos.py \
     --score_name SIG --threshold 3.0 \
     --score_name BAK --threshold 3.0
 
+# remove non-speech samples
+python utils/filter_via_vad.py \
+    --scp_path "tmp/commonvoice_11.0_en_resampled_filtered.scp" \
+    --outfile "tmp/commonvoice_11.0_en_resampled_filtered_vad.scp" \
+    --vad_mode 2 \
+    --threshold 0.2 \
+    --nj 8 \
+    --chunksize 200
+
 python utils/get_commonvoice_subset_split.py \
-    --scp_path tmp/commonvoice_11.0_en_resampled_filtered.scp \
+    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
     --tsv_path "${output_dir}/train.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_train.scp
 
 python utils/get_commonvoice_subset_split.py \
-    --scp_path tmp/commonvoice_11.0_en_resampled_filtered.scp \
+    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
     --tsv_path "${output_dir}/dev.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_validation.scp
 

@@ -6,3 +6,4 @@ scipy
 samplerate
 soundfile
 torch
+webrtcvad
