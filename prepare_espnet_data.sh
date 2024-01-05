@@ -46,20 +46,20 @@ for subset in train; do
     cp "${output_dir}"/tmp/vctk_${subset}/wav.scp "${output_dir}"/tmp/vctk_${subset}/spk1.scp
 done
 
-./utils/prepare_WSJ_speech.sh
-for subset in train; do
-    mkdir -p "${output_dir}/tmp/wsj_${subset}"
-    awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
-    cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
-    awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
-    cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
-done
+#./utils/prepare_WSJ_speech.sh
+#for subset in train; do
+#    mkdir -p "${output_dir}/tmp/wsj_${subset}"
+#    awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
+#    cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
+#    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
+#    awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
+#    awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
+#    cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
+#done
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
-utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" data/speech_train data/dns5_librivox_train data/libritts_train data/vctk_train data/wsj_train
+utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" data/speech_train data/dns5_librivox_train data/libritts_train data/vctk_train #data/wsj_train
 
 ################################
 # Noise and RIR data
@@ -76,7 +76,7 @@ awk '{print $3}' data/dns5_rirs.scp > "${output_dir}/rir_train.scp"
 
 # Data simulation for the validation set
 python simulation/generate_data_param.py --config conf/simulation_validation.yaml
-
+# ~30 minutes with nj=8
 python simulation/simulate_data_from_param.py \
     --config simulation/simulation_validation.yaml \
     --meta_tsv simulation_validation/log/meta.tsv \
