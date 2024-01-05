@@ -11,6 +11,7 @@ from tqdm.contrib.concurrent import process_map
 from espnet2.train.preprocessor import detect_non_silence
 
 from generate_data_param import get_parser
+from rir_utils import estimate_early_rir
 
 
 #############################
@@ -205,6 +206,9 @@ def process_one_sample(
         rir = rir_dic[rir_uid]
         rir_sample = read_audio(rir, force_1ch=force_1ch, fs=fs)[0]
         noisy_speech = add_reverberation(noisy_speech, rir_sample)
+        # make sure the clean speech is aligned with the input noisy speech
+        early_rir_sample = estimate_early_rir(rir_sample, fs=fs)
+        speech_sample = add_reverberation(speech_sample, early_rir_sample)
 
     augmentation = info["augmentation"]
     # apply an additional augmentation
