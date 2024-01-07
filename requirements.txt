@@ -1,8 +1,11 @@
 git+git://github.com/espnet/espnet.git
 librosa
+mir_eval
 numpy
 onnx2torch
 onnxruntime
+pesq
+pystoi
 scipy
 samplerate
 soundfile
