@@ -115,7 +115,7 @@ mv dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampl
 python simulation/generate_data_param.py --config conf/simulation_validation.yaml
 # It takes ~30 minutes to finish simulation with nj=8
 python simulation/simulate_data_from_param.py \
-    --config simulation/simulation_validation.yaml \
+    --config conf/simulation_validation.yaml \
     --meta_tsv simulation_validation/log/meta.tsv \
     --nj 8 \
     --chunksize 200
