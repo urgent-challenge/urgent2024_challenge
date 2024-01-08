@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 from pathlib import Path
 
 import librosa
@@ -11,14 +10,27 @@ from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
 
 
-METRICS = (
-    "PESQ", "ESTOI", "SDR", "MCD", "VISQOL"
-)
+METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 
 
 ################################################################
 # Definition of metrics
 ################################################################
+def get_2fmodel_metric(ref, inf, fs=48000):
+    """Calculate 2f-model.
+
+    References: https://www.audiolabs-erlangen.de/resources/2019-WASPAA-SEBASS/
+
+    Args:
+        ref (np.ndarray): reference signal (time,)
+        inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
+    Returns:
+        ret (float): 2f-model value between [0, 100]
+    """
+    return
+
+
 def estoi_metric(ref, inf, fs=16000):
     """Calculate Extended Short-Time Objective Intelligibility (ESTOI).
 

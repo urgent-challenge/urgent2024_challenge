@@ -24,8 +24,8 @@ for x in p226 p287 p315; do
     find "${output_dir}"/VCTK-Corpus/wav48/$x -iname '*.wav'
 done | awk -F '/' '{print($NF" 48000 "$0)}' | sed -e 's/\.wav / /g' | sort -u > vctk_validation.scp
 
-awk '{split($1, arr, "_"); print($1" "arr[1])}' vctk_train.scp > vctk_train.utt2spk
-awk '{split($1, arr, "_"); print($1" "arr[1])}' vctk_validation.scp > vctk_validation.utt2spk
+awk '{split($1, arr, "_"); print($1" vctk_"arr[1])}' vctk_train.scp > vctk_train.utt2spk
+awk '{split($1, arr, "_"); print($1" vctk_"arr[1])}' vctk_validation.scp > vctk_validation.utt2spk
 
 #--------------------------------
 # Output file:

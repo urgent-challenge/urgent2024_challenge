@@ -54,8 +54,8 @@ python utils/resample_to_estimated_bandwidth.py \
    --nj 4 \
    --chunksize 1000
 
-awk '{split($1, arr, "_"); print($1" "arr[1])}' libritts_resampled_train.scp > libritts_resampled_train.utt2spk
-awk '{split($1, arr, "_"); print($1" "arr[1])}' libritts_resampled_validation.scp > libritts_resampled_validation.utt2spk
+awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_train.scp > libritts_resampled_train.utt2spk
+awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_validation.scp > libritts_resampled_validation.utt2spk
 
 #--------------------------------
 # Output file:

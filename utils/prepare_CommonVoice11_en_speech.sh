@@ -79,11 +79,11 @@ python utils/get_commonvoice_subset_split.py \
     --tsv_path "${output_dir}/dev.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_validation.scp
 
-awk 'FNR==NR {arr[$2]=$1; next} {print($1" "arr[$1".mp3"])}' \
+awk 'FNR==NR {arr[$2]=$1; next} {print($1" cv11_"arr[$1".mp3"])}' \
     "${output_dir}"/train.tsv \
     commonvoice_11.0_en_resampled_filtered_train.scp \
     > commonvoice_11.0_en_resampled_filtered_train.utt2spk
-awk 'FNR==NR {arr[$2]=$1; next} {print($1" "arr[$1".mp3"])}' \
+awk 'FNR==NR {arr[$2]=$1; next} {print($1" cv11_"arr[$1".mp3"])}' \
     "${output_dir}"/dev.tsv \
     commonvoice_11.0_en_resampled_filtered_validation.scp \
     > commonvoice_11.0_en_resampled_filtered_validation.utt2spk

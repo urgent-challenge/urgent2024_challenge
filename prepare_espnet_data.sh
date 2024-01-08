@@ -7,12 +7,18 @@ set -u
 set -o pipefail
 
 output_dir="./data"
+################################################################
+# Note:
+# 1. Unless explicitly mentioned, no GPU is required to run the
+#    scripts.
+################################################################
 
 ################################
 # Speech data
 ################################
 mkdir -p "${output_dir}/tmp"
 
+# It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
 ./utils/prepare_DNS5_librivox_speech.sh
 for subset in train; do
     mkdir -p "${output_dir}/tmp/dns5_librivox_${subset}"
@@ -22,6 +28,18 @@ for subset in train; do
     awk '{print $1" "$2}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2fs
     awk '{print $1" 1ch_"$2"Hz"}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2category
     cp "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp "${output_dir}"/tmp/dns5_librivox_${subset}/spk1.scp
+done
+
+# It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
+./utils/prepare_CommonVoice11_en_speech.sh
+for subset in train; do
+    mkdir -p "${output_dir}/tmp/commonvoice_11_en_${subset}"
+    awk '{print $1" "$3}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp
+    cp commonvoice_11.0_en_resampled_filtered_${subset}.utt2spk "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk
+    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk > "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk2utt
+    awk '{print $1" "$2}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2fs
+    awk '{print $1" 1ch_"$2"Hz"}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2category
+    cp "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk1.scp
 done
 
 ./utils/prepare_LibriTTS_speech.sh
@@ -84,8 +102,10 @@ python simulation/simulate_data_from_param.py \
     --chunksize 200
 
 mkdir -p "${output_dir}"/validation
-awk -F"\t" 'NR>1{print($1" "$2)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/wav.scp 
-awk -F"\t" 'NR>1{print($1" "$4)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/spk1.scp 
+awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="noisy_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/wav.scp 
+awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="speech_sid") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/utt2spk
+utils/utt2spk_to_spk2utt.pl "${output_dir}"/validation/utt2spk > "${output_dir}"/validation/spk2utt
+awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="clean_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/spk1.scp 
 awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="fs") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/utt2fs
 awk '{print($1" 1ch_"$2"Hz")}' "${output_dir}"/validation/utt2fs > "${output_dir}"/validation/utt2category
 

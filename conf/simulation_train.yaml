@@ -4,6 +4,12 @@ speech_scps:
 - vctk_train.scp
 - commonvoice_11.0_en_resampled_filtered_train.scp
 
+speech_utt2spk:
+- dns5_clean_read_speech_resampled_filtered_train.utt2spk
+- libritts_resampled_train.utt2spk
+- vctk_train.utt2spk
+- commonvoice_11.0_en_resampled_filtered_train.utt2spk
+
 log_dir: /path/to/simulation_train/log
 output_dir: /path/to/simulation_train
 repeat_per_utt: 1

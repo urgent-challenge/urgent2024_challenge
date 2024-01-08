@@ -94,6 +94,14 @@ def main(args):
                 assert uid not in speech_dic[int(fs)], (uid, fs)
                 speech_dic[int(fs)][uid] = audio_path
 
+    utt2spk = {}
+    for scp in args.speech_utt2spk:
+        with open(scp, "r") as f:
+            for line in f:
+                uid, sid = line.strip().split()
+                assert uid not in utt2spk, (uid, sid)
+                utt2spk[uid] = sid
+
     noise_dic = defaultdict(dict)
     for scp in args.noise_scps:
         with open(scp, "r") as f:
@@ -115,7 +123,7 @@ def main(args):
     used_rir_dic = {fs: {} for fs in rir_dic.keys()}
 
     f = open(Path(args.log_dir) / "meta.tsv", "w")
-    headers = ["id", "noisy_path", "speech_uid", "clean_path", "noise_uid"]
+    headers = ["id", "noisy_path", "speech_uid", "speech_sid", "clean_path", "noise_uid"]
     if args.store_noise:
         headers.append("noise_path")
     headers += ["snr_dB", "rir_uid", "augmentation", "fs", "length"]
@@ -126,6 +134,7 @@ def main(args):
     count = 0
     for fs in sorted(speech_dic.keys(), reverse=True):
         for uid, audio_path in tqdm(speech_dic[fs].items()):
+            sid = utt2spk[uid]
             # Load speech sample (Channel, Time)
             with sf.SoundFile(audio_path) as af:
                 speech_length = af.frames
@@ -161,6 +170,7 @@ def main(args):
                     f"fileid_{count}",
                     str(outdir / "noisy" / filename),
                     uid,
+                    sid,
                     str(outdir / "clean" / filename),
                     info["noise_uid"],
                 ]
@@ -292,6 +302,12 @@ def get_parser(parser=None):
         help="Path to the scp file containing speech samples",
     )
     group.add_argument(
+        "--speech_utt2spk",
+        type=str,
+        nargs="+",
+        help="Path to the utt2spk file containing speaker mappings",
+    )
+    group.add_argument(
         "--log_dir",
         type=str,
         help="Log directory for storing log and scp files",
@@ -402,6 +418,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
+    assert len(args.speech_utt2spk) == len(args.speech_scps)
     if args.prob_reverberation > 0:
         assert args.rir_scps
     for w in args.weight_augmentations:

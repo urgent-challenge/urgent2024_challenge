@@ -72,7 +72,7 @@ python utils/filter_via_vad.py \
     --chunksize 200
 
 sort -u tmp/dns5_clean_read_speech_resampled_filtered_vad.scp | \
-    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" "spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
+    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" dns5_"spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
 utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt
 head -n 90 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt
 tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
