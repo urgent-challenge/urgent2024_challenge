@@ -1,0 +1,21 @@
+name: urgent
+channels:
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.10
+  - pytorch
+  - pytorch-cuda=11.8
+  - torchvision
+  - torchaudio
+  - tensorboard
+  - numpy
+  - scipy>=1.5.0
+  - matplotlib
+  - seaborn
+  - pandas
+  - ipython
+  - pytest
+  - pip
+  - pip:
+      - -r requirements.txt
