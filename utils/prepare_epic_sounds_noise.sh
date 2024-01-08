@@ -20,6 +20,7 @@ fi
 # extract audio from video files with the "original" sampling frequency
 if ! command -v ffmpeg; then
     echo "Please manually install 'ffmpeg' to proceed."
+    exit 1
 fi
 find "${output_dir}/EPIC-KITCHENS-100/" -iname '*.mp4' | while read -r fname; do
     fbasename=$(basename "${fname}" | sed -e 's/\.mp4$//i')

@@ -11,6 +11,7 @@ output_dir="./dns5_fullband"
 
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
+    exit 1
 fi
 #################################
 # Download data

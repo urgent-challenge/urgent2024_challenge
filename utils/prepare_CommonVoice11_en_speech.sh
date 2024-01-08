@@ -11,12 +11,14 @@ output_dir="./datasets_cv11_en"
 
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
+    exit 1
 fi
 #################################
 # Download data
 #################################
 if [ ! -d "${output_dir}/clips" ]; then
     echo "Please manually download the data from https://commonvoice.mozilla.org/en/datasets and save them under the directory '$output_dir'"
+    exit 1
 fi
 
 #################################
