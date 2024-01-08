@@ -6,8 +6,9 @@ set -e
 set -u
 set -o pipefail
 
-dnsmos_model_dir=
+dnsmos_model_dir="./DNSMOS"
 output_dir="./dns5_fullband"
+
 
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
@@ -17,7 +18,9 @@ fi
 # Download data
 #################################
 # Refer to https://github.com/microsoft/DNS-Challenge/blob/master/download-dns-challenge-5-headset-training.sh
+mkdir -p ${output_dir}/Track1_Headset
 for suffix in {a..u}; do
+    echo "Downloading part ${suffix} of 21"
     blob_name="Track1_Headset/read_speech.tgz.parta${suffix}"
     url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset/${blob_name}"
     wget --continue "$url" -O "${output_dir}/${blob_name}"

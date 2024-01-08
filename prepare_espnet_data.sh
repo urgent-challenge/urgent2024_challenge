@@ -22,6 +22,12 @@ output_dir="./data"
 #    downloaded audio data as well some meta data.
 ################################################################
 
+
+################################
+# DNSMOS models onnx files
+################################
+./utils/download_dnsmos_onnx.sh
+
 ################################
 # Speech data
 ################################
