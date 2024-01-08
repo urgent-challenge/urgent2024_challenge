@@ -1,4 +1,4 @@
-git+git://github.com/espnet/espnet.git
+git+https://github.com/espnet/espnet.git
 librosa
 mir_eval
 numpy
