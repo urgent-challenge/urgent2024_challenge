@@ -14,10 +14,13 @@ output_dir="./data"
 #---------------------------------------------------------------
 # 1. Unless explicitly mentioned, no GPU is required to run each
 #    of the scripts.
-# 2. For the ./utils/prepare_***.sh scripts, it is recommended
+# 2. Multiple CPUs may be required if the argument --nj or
+#    --nsplits is specified for some python scripts in
+#    ./utils/prepare_***.sh.
+# 3. For the ./utils/prepare_***.sh scripts, it is recommended
 #    to check the variables defined in the beginning of each
 #    script and fill appropriate values before running them.
-# 3. For the ./utils/prepare_***.sh scripts, the `output_dir`
+# 4. For the ./utils/prepare_***.sh scripts, the `output_dir`
 #    variable is used to specify the directory for storing
 #    downloaded audio data as well some meta data.
 ################################################################
