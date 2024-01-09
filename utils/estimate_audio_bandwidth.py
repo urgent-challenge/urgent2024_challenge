@@ -9,17 +9,12 @@ from tqdm.contrib.concurrent import process_map
 
 
 def estimate_bandwidth(audios, threshold=-50.0, nfft=512, hop=256, sample_rate=16000):
-#    ret = {}
-#    count = 0
-#    for uid, audio_path in tqdm(audios):
         uid, audio_path = audios
         try:
             audio, fs = sf.read(audio_path)
         except:
-#            count += 1
             print(f"Error: cannot open audio file '{audio_path}'. Skipping it", flush=True)
             return
-#            continue
         if audio.ndim > 1:
             audio = audio.T
         else:
@@ -38,13 +33,10 @@ def estimate_bandwidth(audios, threshold=-50.0, nfft=512, hop=256, sample_rate=1
         # (C, F, T) -> (C, F)
         mean_power = power.mean(2)
         peak = mean_power.max(1).values
-        min_energy = peak * 10 ** (threshold / 10)
+        min_energy = peak.min() * 10 ** (threshold / 10)
         for i in range(len(freq) - 1, -1, -1):
             if mean_power[:, i].min() > min_energy:
-#                ret[uid] = [str(audio_path), freq[i].item()]
                 return uid, [str(audio_path), freq[i].item()]
-#                break
-#    return ret
 
 
 if __name__ == "__main__":
