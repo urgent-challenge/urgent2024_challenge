@@ -5,12 +5,14 @@ import librosa
 import numpy as np
 import soundfile as sf
 from mir_eval.separation import bss_eval_sources
+from oct2py import octave
 from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
 
+from utils.setup_octave import setup_octave
 
-METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
+METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL", "2F_MODEL")
 
 
 ################################################################
@@ -18,8 +20,12 @@ METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 ################################################################
 def get_2fmodel_metric(ref, inf, fs=48000):
     """Calculate 2f-model.
+    Currently, this function does not work
+    because the MATLAB code requires not the audio but the paths as arguments.
 
     References: https://www.audiolabs-erlangen.de/resources/2019-WASPAA-SEBASS/
+    PQevalAudio is from: https://www-mmsp.ece.mcgill.ca/Documents/Software/index.html
+
 
     Args:
         ref (np.ndarray): reference signal (time,)
@@ -28,7 +34,64 @@ def get_2fmodel_metric(ref, inf, fs=48000):
     Returns:
         ret (float): 2f-model value between [0, 100]
     """
-    return
+    if fs != 48000:
+        ref = librosa.resample(ref, orig_sr=fs, target_sr=48000)
+        inf = librosa.resample(inf, orig_sr=fs, target_sr=48000)
+
+    # use MATLAB script here using octave
+    # TODO: modify the nested for loop in the MATLAB script
+    movb = octave.feval("PQevalAudio", ref, inf)[0]
+
+    # 4-th element is the ADBb
+    # 6-th element is the AvgModDiff1b
+    adbb = movb[4]
+    avgmoddiff1b = movb[6]
+
+    # calculate 2f-model score
+    first_term = 56.1345 / (1 + (-0.0282 * avgmoddiff1b - 0.8628)**2)
+    second_term = -27.1451 * adbb
+    score = first_term + second_term + 86.3515
+
+    # score should be between 0 and 100
+    score = min(max(score, 0), 100)
+    return score
+
+
+def get_2fmodel_metric_tmp(ref_path, inf_path, fs=48000):
+    """Calculate 2f-model.
+    This function is a temporal version of get_2fmodel_metric.
+    Currently, this function requires the path of the audio files
+    since the MATLAB code needs those, which will be fixed in the future
+    to accept the np.ndarray to align with the other metrics.
+
+    References: https://www.audiolabs-erlangen.de/resources/2019-WASPAA-SEBASS/
+
+    Args:
+        ref_path (str): reference signal path
+        inf_path (str): enhanced signal path
+        fs (int): sampling rate in Hz
+    Returns:
+        ret (float): 2f-model value between [0, 100]
+    """
+    assert fs == 48000
+
+    # use MATLAB script here using octave
+    # TODO: modify the nested for loop in the MATLAB script
+    movb = octave.feval("PQevalAudio", ref_path, inf_path)[0]
+
+    # 4-th element is the ADBb
+    # 6-th element is the AvgModDiff1b
+    adbb = movb[4]
+    avgmoddiff1b = movb[6]
+
+    # calculate 2f-model score
+    first_term = 56.1345 / (1 + (-0.0282 * avgmoddiff1b - 0.8628)**2)
+    second_term = -27.1451 * adbb
+    score = first_term + second_term + 86.3515
+
+    # score should be between 0 and 100
+    score = min(max(score, 0), 100)
+    return score
 
 
 def estoi_metric(ref, inf, fs=16000):
@@ -128,6 +191,9 @@ def visqol_metric(ref, inf, fs=48000):
 # Main entry
 ################################################################
 def main(args):
+    # setup octave for 2f-model
+    setup_octave()
+
     refs = {}
     with open(args.ref_scp, "r") as f:
         for line in f:
@@ -186,6 +252,9 @@ def process_one_pair(data_pair):
             scores[metric] = mcd_metric(ref, inf)
         elif metric == "VISQOL":
             scores[metric] = visqol_metric(ref, inf, fs=fs)
+        elif metric == "2F_MODEL":
+            scores[metric] = get_2fmodel_metric_tmp(ref_path, inf_path, fs=fs)
+            # scores[metric] = get_2fmodel_metric(ref, inf, fs=fs)
         else:
             raise NotImplementedError(metric)
 
@@ -229,3 +298,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
+
+    # setup_octave()
+    # ref_path = "../2f_model/SASSEC/Signals/orig/female_inst_sim_1.wav"
+    # inf_path = "../2f_model/SASSEC/Signals/Algo1/female_inst_sim_1.wav"
+    # score = get_2fmodel_metric_tmp(ref_path, inf_path, fs=48000)
+    # print(score)

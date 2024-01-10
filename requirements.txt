@@ -12,3 +12,4 @@ soundfile
 torch
 tqdm
 webrtcvad
+oct2py
