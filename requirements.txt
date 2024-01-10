@@ -9,6 +9,7 @@ pystoi
 scipy
 samplerate
 soundfile
+soxr
 torch
 tqdm
 webrtcvad
