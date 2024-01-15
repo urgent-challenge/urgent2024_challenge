@@ -1,14 +1,24 @@
 git+https://github.com/espnet/espnet.git
 librosa
-mir_eval
 numpy
-onnx2torch
-onnxruntime
-pesq
-pystoi
 scipy
 samplerate
 soundfile
 torch
+transformers
 tqdm
 webrtcvad
+
+# for calculating intrusive SE metrics
+mir_eval
+pesq
+pystoi
+
+# for calculating the DNSMOS metric
+onnx2torch
+onnxruntime
+
+# for calculating the phoneme similarity metric
+levenshtein
+python-espeak  # you will need to install eSpeak before this: sudo apt-get install libespeak-dev
+phonemizer

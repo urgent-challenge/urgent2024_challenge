@@ -17,7 +17,7 @@ fi
 # Download data
 #################################
 if [ ! -d "${output_dir}/clips" ]; then
-    echo "Please manually download the data from https://commonvoice.mozilla.org/en/datasets and save them under the directory '$output_dir'"
+    echo "Please manually download the data (Common Voice Corpus 11.0) from https://commonvoice.mozilla.org/en/datasets and save them under the directory '$output_dir'"
     exit 1
 fi
 

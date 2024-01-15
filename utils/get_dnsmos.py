@@ -45,7 +45,6 @@ def get_dnsmos(data, dnsmos_model):
             assert prev_audio is not None
         else:
             audio, fs = sf.read(dic["audio_path"])
-#            assert fs == 16000, (uid, dic["audio_path"], fs)
             if fs != 16000:
                 audio = librosa.resample(audio, orig_sr=fs, target_sr=16000)
             prev_audio_path = dic["audio_path"]

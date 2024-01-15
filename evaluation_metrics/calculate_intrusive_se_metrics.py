@@ -162,13 +162,13 @@ def main(args):
         for metric in METRICS:
             mean_score = np.nanmean([score[metric] for uid, score in ret])
             f.write(f"{metric}: {mean_score:.4f}\n")
-    print(f"Overall results have been written in {outdir / 'RESULTS.md'}", flush=True)
+    print(f"Overall results have been written in {outdir / 'RESULTS.txt'}", flush=True)
 
 
 def process_one_pair(data_pair):
     uid, ref_path, inf_path = data_pair
-    ref, fs = sf.read(ref_path)
-    inf, fs2 = sf.read(inf_path)
+    ref, fs = sf.read(ref_path, dtype="float32")
+    inf, fs2 = sf.read(inf_path, dtype="float32")
     assert fs == fs2, (fs, fs2)
     assert ref.shape == inf.shape, (ref.shape, inf.shape)
 
