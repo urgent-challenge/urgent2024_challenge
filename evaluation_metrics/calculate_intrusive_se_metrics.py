@@ -105,6 +105,11 @@ def sdr_metric(ref, inf):
         sdr (np.ndarray): SDR values (unbounded)
     """
     assert ref.shape == inf.shape
+    if ref.ndim == 1:
+        ref = ref[None, :]
+        inf = inf[None, :]
+    else:
+        assert ref.ndim == 2, ref.shape
     num_src, _ = ref.shape
     sdr, sir, sar, perm = bss_eval_sources(ref, inf, compute_permutation=True)
     return sdr
