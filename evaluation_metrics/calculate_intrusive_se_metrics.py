@@ -75,6 +75,7 @@ def pesq_metric(ref, inf, fs=8000):
         mode = "wb"
         ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
         inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+        fs = 16000
     else:
         raise ValueError(
             "sample rate must be 8000 or 16000+ for PESQ evaluation, " f"but got {fs}"
