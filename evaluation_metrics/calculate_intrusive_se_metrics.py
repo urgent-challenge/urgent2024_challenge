@@ -102,7 +102,7 @@ def sdr_metric(ref, inf):
         ref (np.ndarray): reference signal (num_src, time)
         inf (np.ndarray): enhanced signal (num_src, time)
     Returns:
-        sdr (np.ndarray): SDR values (unbounded)
+        sdr (float): SDR values (unbounded)
     """
     assert ref.shape == inf.shape
     if ref.ndim == 1:
@@ -112,7 +112,7 @@ def sdr_metric(ref, inf):
         assert ref.ndim == 2, ref.shape
     num_src, _ = ref.shape
     sdr, sir, sar, perm = bss_eval_sources(ref, inf, compute_permutation=True)
-    return sdr
+    return float(np.mean(sdr))
 
 
 def visqol_metric(ref, inf, fs=48000):
