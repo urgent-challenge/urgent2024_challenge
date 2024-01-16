@@ -1,10 +1,10 @@
 import argparse
 import math
-from pathlib import Path
 import shutil
 import sys
 import tarfile
 import tqdm
+from pathlib import Path
 
 
 if __name__ == "__main__":
