@@ -3,12 +3,13 @@ Official data preparation scripts for the URGENT 2024 Challenge
 
 ## Requirements
 
-- >8 Cores
-- At least 1 GPU (recommended for speedup in DNSMOS calculation)
+- `>8` Cores
+- At least `1` GPU (recommended for speedup in DNSMOS calculation)
 - XXX GB of free disk space
   - Speech
     - DNS5 speech (original + resampled): GB
     - CommonVoice English speech (original + resampled): GB
+    - LibriTTS (original + resampled): GB
     - VCTK: GB
     - WSJ: GB
   - Noise
