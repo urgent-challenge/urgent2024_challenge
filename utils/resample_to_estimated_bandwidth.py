@@ -77,7 +77,8 @@ if __name__ == "__main__":
         "--max_files",
         type=int,
         default=10000,
-        help="The maximum number of files per sub-directory",
+        help="The maximum number of files per sub-directory. "
+        "This is useful for systems that limit the max number of files per directory",
     )
 
     args = parser.parse_args()
