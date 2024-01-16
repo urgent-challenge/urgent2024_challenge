@@ -23,7 +23,7 @@ class PhonemePredictor(Module):
     ):
         # https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft
         super().__init__()
-        self.processor = Wav2Vec2Processor.from_pretrained(checkpoint).to(device=device)
+        self.processor = Wav2Vec2Processor.from_pretrained(checkpoint)
         self.model = Wav2Vec2ForCTC.from_pretrained(checkpoint).to(device=device)
         self.sr = sr
         self.device = device

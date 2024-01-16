@@ -4,6 +4,7 @@ numpy
 scipy
 samplerate
 soundfile
+soxr
 torch
 transformers
 tqdm
@@ -20,5 +21,4 @@ onnxruntime
 
 # for calculating the phoneme similarity metric
 levenshtein
-python-espeak  # you will need to install eSpeak before this: sudo apt-get install libespeak-dev
 phonemizer
