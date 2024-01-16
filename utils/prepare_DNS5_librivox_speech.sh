@@ -18,32 +18,26 @@ fi
 # Download data
 #################################
 # Refer to https://github.com/microsoft/DNS-Challenge/blob/master/download-dns-challenge-5-headset-training.sh
-mkdir -p ${output_dir}/Track1_Headset
-for suffix in {a..u}; do
-    echo "Downloading part ${suffix} of 21"
-    blob_name="Track1_Headset/read_speech.tgz.parta${suffix}"
-    url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset/${blob_name}"
-    wget --continue "$url" -O "${output_dir}/${blob_name}"
-done
-cat "${output_dir}"/read_speech.tgz.parta* | tar -xzv -C "${output_dir}"
+./utils/download_librivox_speech.sh ${output_dir} 8
 
 #################################
 # Data preprocessing
 #################################
 mkdir -p tmp
-python utils/estimate_audio_bandwidth.py \
-    --audio_dir ${output_dir}/mnt/dnsv5/clean/read_speech/ \
+OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+    --audio_dir ${output_dir}/Track1_Headset/mnt/dnsv5/clean/read_speech/ \
     --audio_format wav \
     --chunksize 1000 \
-    --nj 4 \
+    --nj 8 \
     --outfile tmp/dns5_clean_read_speech.json
 
-python utils/resample_to_estimated_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/dns5_clean_read_speech.json \
    --out_scpfile tmp/dns5_clean_read_speech_resampled.scp \
-   --outdir "${output_dir}/resampled/clean/read_speech" \
+   --outdir "${output_dir}/Track1_Headset/resampled/clean/read_speech" \
    --resample_type "kaiser_best" \
-   --nj 4 \
+   --max_files 5000 \
+   --nj 8 \
    --chunksize 1000
 
 #################################
@@ -67,7 +61,7 @@ python utils/filter_via_dnsmos.py \
     --score_name BAK --threshold 3.0
 
 # remove non-speech samples
-python utils/filter_via_vad.py \
+OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
     --scp_path "tmp/dns5_clean_read_speech_resampled_filtered.scp" \
     --outfile "tmp/dns5_clean_read_speech_resampled_filtered_vad.scp" \
     --vad_mode 2 \

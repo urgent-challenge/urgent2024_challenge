@@ -1,8 +1,10 @@
 import json
 from functools import partial
+import math
 from pathlib import Path
 
-import librosa
+# import librosa
+import soxr
 import soundfile as sf
 from tqdm.contrib.concurrent import process_map
 
@@ -10,7 +12,7 @@ from tqdm.contrib.concurrent import process_map
 sampling_rates = (8000, 16000, 22050, 24000, 32000, 44100, 48000)
 
 
-def resample_to_estimated_bandwidth(path_bw, outdir, resample_type="kaiser_best"):
+def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits, outdir, resample_type="kaiser_best"):
     audio_path, est_bandwidth = path_bw
     try:
         audio, fs = sf.read(audio_path)
@@ -25,6 +27,7 @@ def resample_to_estimated_bandwidth(path_bw, outdir, resample_type="kaiser_best"
     if est_fs == fs:
         return audio_path, fs
 
+    """
     if audio.ndim > 1:
         audio = audio.T
     audio = librosa.resample(
@@ -32,8 +35,13 @@ def resample_to_estimated_bandwidth(path_bw, outdir, resample_type="kaiser_best"
     )
     if audio.ndim > 1:
         audio = audio.T
-    outfile = str(Path(outdir) / (Path(audio_path).stem + ".wav"))
-    sf.write(outfile, audio, est_fs)
+    """
+    audio = soxr.resample(audio, fs, est_fs)
+
+    subdir = f"{idx // max_files_per_dir:0{num_digits}x}"
+    outfile = Path(outdir) / subdir / (Path(audio_path).stem + ".wav")
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+    sf.write(str(outfile), audio, est_fs)
     return outfile, est_fs
 
 
@@ -64,6 +72,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chunksize", type=int, default=1, help="Chunksize for parallel jobs"
     )
+    parser.add_argument(
+        "-m",
+        "--max_files",
+        type=int,
+        default=10000,
+        help="The maximum number of files per sub-directory. "
+        "This is useful for systems that limit the max number of files per directory",
+    )
 
     args = parser.parse_args()
 
@@ -76,14 +92,22 @@ if __name__ == "__main__":
             for line in f:
                 uid, bandwidth, path = line.strip().split(maxsplit=1)
                 audios.append((path, bandwidth))
+
+    indices = list(range(len(audios)))
+    num_digits = math.ceil(math.log(len(indices) / args.max_files, 16))
+
     Path(args.outdir).mkdir(parents=True, exist_ok=True)
+
     ret = process_map(
         partial(
             resample_to_estimated_bandwidth,
+            max_files_per_dir=args.max_files,
+            num_digits=num_digits,
             outdir=args.outdir,
             resample_type=args.resample_type,
         ),
         audios,
+        indices,
         max_workers=args.nj,
         chunksize=args.chunksize,
     )
