@@ -13,8 +13,7 @@ from mcd import calculate as calculate_mcd
 import os
 
 
-# METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
-METRICS = ("MCD", )
+METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 
 if "VISQOL" in METRICS:
     from visqol import visqol_lib_py
