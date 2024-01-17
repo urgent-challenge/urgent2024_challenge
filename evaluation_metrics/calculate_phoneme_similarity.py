@@ -18,6 +18,9 @@ TARGET_FS = 16000
 # Definition of metrics
 ################################################################
 class PhonemePredictor(Module):
+    # espeak installation is required for this function to work
+    # To install, try
+    # https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
     def __init__(
         self, checkpoint="facebook/wav2vec2-lv-60-espeak-cv-ft", sr=16000, device="cpu"
     ):
@@ -109,7 +112,7 @@ def main(args):
         f"[Job {args.job}/{args.nsplits}] Processing ({len(data_pairs)}/{size}) samples",
         flush=True,
     )
-    suffix = "" if args.nsplits == args.job == 1 else "." + args.job
+    suffix = "" if args.nsplits == args.job == 1 else f".{args.job}"
 
     outdir = Path(args.output_dir)
     outdir.mkdir(parents=True, exist_ok=True)

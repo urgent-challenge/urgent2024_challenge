@@ -65,7 +65,7 @@ def main(args):
         f"[Job {args.job}/{args.nsplits}] Processing ({len(data_pairs)}/{size}) samples",
         flush=True,
     )
-    suffix = "" if args.nsplits == args.job == 1 else "." + args.job
+    suffix = "" if args.nsplits == args.job == 1 else f".{args.job}"
 
     outdir = Path(args.output_dir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -73,8 +73,10 @@ def main(args):
         metric: (outdir / f"{metric}{suffix}.scp").open("w") for metric in METRICS
     }
 
-    model = Speech2Embedding.from_pretrained(model_tag="espnet/voxcelebs12_rawnet3")
-    model.spk_model.to(device=args.device).eval()
+    model = Speech2Embedding.from_pretrained(
+        model_tag="espnet/voxcelebs12_rawnet3", device=args.device
+    )
+    model.spk_model.eval()
     ret = []
     for uid, ref_audio, inf_audio in tqdm(data_pairs):
         _, score = process_one_pair((uid, ref_audio, inf_audio), model=model)
