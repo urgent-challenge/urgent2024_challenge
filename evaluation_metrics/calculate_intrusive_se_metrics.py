@@ -23,8 +23,9 @@ if "VISQOL" in METRICS:
     visqol_config.audio.sample_rate = 16000
     visqol_config.options.use_speech_scoring = True
     svr_model_path = "lattice_tcditugenmeetpackhref_ls2_nl60_lr12_bs2048_learn.005_ep2400_train1_7_raw.tflite"
-    visqol_config.options.svr_model_path = os.path.join(
-    os.path.dirname(visqol_lib_py.__file__), "model", svr_model_path)
+    visqol_config.options.svr_model_path = str(
+        Path(visqol_lib_py.__file__).parent / "model" / svr_model_path
+    )
     visqol_api = visqol_lib_py.VisqolApi()
     visqol_api.Create(visqol_config)
 
