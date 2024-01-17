@@ -9,7 +9,7 @@ from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
 import tqdm
-from evaluation_metrics.mcd_utils import calculate as calculate_mcd
+from mcd_utils import calculate as calculate_mcd
 
 
 METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
