@@ -8,10 +8,25 @@ from mir_eval.separation import bss_eval_sources
 from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
+from mcd_utils import calculate as calculate_mcd
 
 
 METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 
+if "VISQOL" in METRICS:
+    from visqol import visqol_lib_py
+    from visqol.pb2 import visqol_config_pb2
+    from visqol.pb2 import similarity_result_pb2
+    visqol_config = visqol_config_pb2.VisqolConfig()
+    # 16kHz for speech mode
+    visqol_config.audio.sample_rate = 16000
+    visqol_config.options.use_speech_scoring = True
+    svr_model_path = "lattice_tcditugenmeetpackhref_ls2_nl60_lr12_bs2048_learn.005_ep2400_train1_7_raw.tflite"
+    visqol_config.options.svr_model_path = str(
+        Path(visqol_lib_py.__file__).parent / "model" / svr_model_path
+    )
+    visqol_api = visqol_lib_py.VisqolApi()
+    visqol_api.Create(visqol_config)
 
 ################################################################
 # Definition of metrics
@@ -44,16 +59,17 @@ def estoi_metric(ref, inf, fs=16000):
     return stoi(ref, inf, fs_sig=fs, extended=True)
 
 
-def mcd_metric(ref, inf):
+def mcd_metric(ref, inf, fs):
     """Calculate Mel Cepstral Distortion (MCD).
 
     Args:
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
     Returns:
         mcd (float): MCD value (unbounded)
-    """
-    return
+    """ 
+    return calculate_mcd(ref, inf, fs)
 
 
 def pesq_metric(ref, inf, fs=8000):
@@ -115,7 +131,7 @@ def sdr_metric(ref, inf):
     return float(np.mean(sdr))
 
 
-def visqol_metric(ref, inf, fs=48000):
+def visqol_metric(ref, inf, fs=16000):
     """Calculate Virtual Speech Quality Objective Listener (VISQOL).
 
     Reference: https://github.com/google/visqol
@@ -127,7 +143,13 @@ def visqol_metric(ref, inf, fs=48000):
     Returns:
         visqol (float): VISQOL value between [1, 5]
     """
-    return
+    ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
+    inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+    fs = 16000
+
+    similarity_result = visqol_api.Measure(ref, inf)
+
+    return similarity_result
 
 
 ################################################################
@@ -189,7 +211,7 @@ def process_one_pair(data_pair):
         elif metric == "SDR":
             scores[metric] = sdr_metric(ref, inf)
         elif metric == "MCD":
-            scores[metric] = mcd_metric(ref, inf)
+            scores[metric] = mcd_metric(ref, inf, fs=fs)
         elif metric == "VISQOL":
             scores[metric] = visqol_metric(ref, inf, fs=fs)
         else:
