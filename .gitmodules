@@ -1,0 +1,6 @@
+[submodule "lib/NISQA"]
+	path = lib/NISQA
+	url = git@github.com:gabrielmittag/NISQA.git
+[submodule "lib/visqol"]
+	path = lib/visqol
+	url = git@github.com:google/visqol.git
