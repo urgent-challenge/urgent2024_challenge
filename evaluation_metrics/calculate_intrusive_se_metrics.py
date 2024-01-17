@@ -13,8 +13,7 @@ from evaluation_metrics.mcd_utils import calculate as calculate_mcd
 import os
 
 
-# METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
-METRICS = ("MCD", )
+METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 
 if "VISQOL" in METRICS:
     from visqol import visqol_lib_py
@@ -67,6 +66,7 @@ def mcd_metric(ref, inf, fs):
     Args:
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
     Returns:
         mcd (float): MCD value (unbounded)
     """ 

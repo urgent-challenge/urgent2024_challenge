@@ -2,6 +2,7 @@
 
 # Copyright 2020 Wen-Chin Huang and Tomoki Hayashi
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+# ported from https://github.com/espnet/espnet/blob/master/utils/mcd_calculate.py
 
 """Evaluate MCD between generated and groundtruth audios with SPTK-based mcep."""
 
@@ -18,33 +19,6 @@ import pysptk
 import soundfile as sf
 from fastdtw import fastdtw
 from scipy import spatial
-
-
-
-
-def find_files(
-    root_dir: str, query: List[str] = ["*.flac", "*.wav"], include_root_dir: bool = True
-) -> List[str]:
-    """Find files recursively.
-
-    Args:
-        root_dir (str): Root root_dir to find.
-        query (List[str]): Query to find.
-        include_root_dir (bool): If False, root_dir name is not included.
-
-    Returns:
-        List[str]: List of found filenames.
-
-    """
-    files = []
-    for root, dirnames, filenames in os.walk(root_dir, followlinks=True):
-        for q in query:
-            for filename in fnmatch.filter(filenames, q):
-                files.append(os.path.join(root, filename))
-    if not include_root_dir:
-        files = [file_.replace(root_dir + "/", "") for file_ in files]
-
-    return files
 
 
 def sptk_extract(
