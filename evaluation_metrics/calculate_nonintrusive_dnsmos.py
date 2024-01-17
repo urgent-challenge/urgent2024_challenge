@@ -141,7 +141,7 @@ if __name__ == "__main__":
         "--device",
         type=str,
         default="cpu",
-        help="Device for running speaker embedding extraction",
+        help="Device for running DNSMOS calculation",
     )
     parser.add_argument(
         "--nsplits",

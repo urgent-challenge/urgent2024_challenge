@@ -12,7 +12,7 @@ from tqdm.contrib.concurrent import process_map
 from mcd_utils import calculate as calculate_mcd
 
 
-METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
+METRICS = ("PESQ", "ESTOI", "SDR", "LSD", "MCD", "VISQOL")
 
 if "VISQOL" in METRICS:
     from visqol import visqol_lib_py
@@ -61,6 +61,29 @@ def estoi_metric(ref, inf, fs=16000):
     return stoi(ref, inf, fs_sig=fs, extended=True)
 
 
+def lsd_metric(ref, inf, fs, nfft=0.032, hop=0.016, eps=1.0e-08):
+    """Calculate Log-Spectral Distance (LSD).
+
+    Args:
+        ref (np.ndarray): reference signal (time,)
+        inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
+        nfft (float): FFT length in seconds
+        hop (float): hop length in seconds
+        eps (float): epsilon value for numerical stability
+    Returns:
+        mcd (float): LSD value between [0, +inf)
+    """
+    nfft = int(fs * nfft)
+    hop = int(fs * hop)
+    # T x F
+    ref_spec = np.abs(librosa.stft(ref, hop_length=hop, n_fft=nfft)).T
+    inf_spec = np.abs(librosa.stft(inf, hop_length=hop, n_fft=nfft)).T
+    lsd = np.log10(ref_spec**2 / ((inf_spec + eps) ** 2) + eps) ** 2
+    lsd = np.mean(np.mean(lsd, axis=1) ** 0.5, axis=0)
+    return lsd
+
+
 def mcd_metric(ref, inf, fs):
     """Calculate Mel Cepstral Distortion (MCD).
 
@@ -69,7 +92,7 @@ def mcd_metric(ref, inf, fs):
         inf (np.ndarray): enhanced signal (time,)
         fs (int): sampling rate in Hz
     Returns:
-        mcd (float): MCD value (unbounded)
+        mcd (float): MCD value between [0, +inf)
     """
     return calculate_mcd(ref, inf, fs)
 

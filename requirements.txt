@@ -25,3 +25,6 @@ onnxruntime
 # for calculating the phoneme similarity metric
 levenshtein
 phonemizer
+
+# for text normalization in the WER metric
+openai-whisper
