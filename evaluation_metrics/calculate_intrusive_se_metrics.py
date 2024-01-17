@@ -169,11 +169,6 @@ def main(args):
             uid, audio_path = line.strip().split()
             data_pairs.append((uid, refs[uid], audio_path))
 
-    # ret = []
-    # for dp in tqdm.tqdm(data_pairs):
-    #     ret.append(process_one_pair(
-    #         dp
-    #     ))
     ret = process_map(
         process_one_pair,
         data_pairs,
