@@ -8,7 +8,6 @@ from mir_eval.separation import bss_eval_sources
 from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
-import tqdm
 from mcd_utils import calculate as calculate_mcd
 
 
