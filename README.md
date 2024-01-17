@@ -29,5 +29,7 @@ With minimum specs, expects the whole process to take YYY hours.
    With Anaconda, just run
       conda env create -f environment.yaml
       conda activate urgent
-2. Run the script
+2. Install eSpeak-NG (used for the phoneme similarity metric computation)
+   - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
+3. Run the script
       ./prepare_espnet_data.sh
