@@ -60,6 +60,8 @@ class LevenshteinPhonemeSimilarity:
     def __call__(self, reference: np.ndarray, sample: np.ndarray) -> float:
         sample_phonemes = self.phoneme_predictor(sample)[0].replace(" ", "")
         ref_phonemes = self.phoneme_predictor(reference)[0].replace(" ", "")
+        if len(ref_phonemes) == 0:
+            return np.nan
         lev_distance = distance(sample_phonemes, ref_phonemes)
         return 1 - lev_distance / len(ref_phonemes)
 
