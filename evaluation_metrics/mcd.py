@@ -2,6 +2,7 @@
 
 # Copyright 2020 Wen-Chin Huang and Tomoki Hayashi
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+# ported from https://github.com/espnet/espnet/blob/master/utils/mcd_calculate.py
 
 """Evaluate MCD between generated and groundtruth audios with SPTK-based mcep."""
 
