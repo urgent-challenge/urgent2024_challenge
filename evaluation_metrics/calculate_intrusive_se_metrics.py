@@ -9,7 +9,7 @@ from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
 
-from .mcd_utils import calculate as calculate_mcd
+from mcd_utils import calculate as calculate_mcd
 
 
 METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
@@ -206,8 +206,7 @@ def process_one_pair(data_pair):
     for metric in METRICS:
         if metric == "PESQ":
             pesq_score = pesq_metric(ref, inf, fs=fs)
-            if pesq_score is not None:
-                scores[metric] = pesq_score
+            scores[metric] = pesq_score if pesq_score is not None else np.nan
         elif metric == "ESTOI":
             scores[metric] = estoi_metric(ref, inf, fs=fs)
         elif metric == "SDR":
