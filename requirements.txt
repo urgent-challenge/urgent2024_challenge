@@ -11,9 +11,12 @@ tqdm
 webrtcvad
 
 # for calculating intrusive SE metrics
+fastdtw
 mir_eval
 pesq
+pysptk
 pystoi
+
 
 # for calculating the DNSMOS metric
 onnx2torch

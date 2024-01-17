@@ -6,17 +6,10 @@
 
 """Evaluate MCD between generated and groundtruth audios with SPTK-based mcep."""
 
-import argparse
-import fnmatch
-import logging
-import multiprocessing as mp
-import os
-from typing import Dict, List, Tuple
+from typing import Tuple
 
-import librosa
 import numpy as np
 import pysptk
-import soundfile as sf
 from fastdtw import fastdtw
 from scipy import spatial
 
@@ -75,10 +68,6 @@ def sptk_extract(
     return np.stack(mcep)
 
 
-def _get_basename(path: str) -> str:
-    return os.path.splitext(os.path.split(path)[-1])[0]
-
-
 def _get_best_mcep_params(fs: int) -> Tuple[int, float]:
     if fs == 8000:
         return 13, 0.41
@@ -109,7 +98,6 @@ def calculate(
 ):
     """Calculate MCD."""
 
-
     # extract ground truth and converted features
     gen_mcep = sptk_extract(
         x=inf_audio,
@@ -139,6 +127,3 @@ def calculate(
     mcd = np.mean(10.0 / np.log(10.0) * np.sqrt(2 * diff2sum), 0)
 
     return mcd
-
-
-

@@ -8,7 +8,8 @@ from mir_eval.separation import bss_eval_sources
 from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
-from mcd_utils import calculate as calculate_mcd
+
+from .mcd_utils import calculate as calculate_mcd
 
 
 METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
@@ -16,7 +17,7 @@ METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
 if "VISQOL" in METRICS:
     from visqol import visqol_lib_py
     from visqol.pb2 import visqol_config_pb2
-    from visqol.pb2 import similarity_result_pb2
+
     visqol_config = visqol_config_pb2.VisqolConfig()
     # 16kHz for speech mode
     visqol_config.audio.sample_rate = 16000
@@ -27,6 +28,7 @@ if "VISQOL" in METRICS:
     )
     visqol_api = visqol_lib_py.VisqolApi()
     visqol_api.Create(visqol_config)
+
 
 ################################################################
 # Definition of metrics
@@ -68,7 +70,7 @@ def mcd_metric(ref, inf, fs):
         fs (int): sampling rate in Hz
     Returns:
         mcd (float): MCD value (unbounded)
-    """ 
+    """
     return calculate_mcd(ref, inf, fs)
 
 
