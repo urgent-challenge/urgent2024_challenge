@@ -66,6 +66,7 @@ def mcd_metric(ref, inf, fs):
     Args:
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
     Returns:
         mcd (float): MCD value (unbounded)
     """ 
