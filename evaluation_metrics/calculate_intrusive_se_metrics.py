@@ -234,6 +234,8 @@ def process_one_pair(data_pair):
             scores[metric] = estoi_metric(ref, inf, fs=fs)
         elif metric == "SDR":
             scores[metric] = sdr_metric(ref, inf)
+        elif metric == "LSD":
+            scores[metric] = lsd_metric(ref, inf, fs=fs)
         elif metric == "MCD":
             scores[metric] = mcd_metric(ref, inf, fs=fs)
         elif metric == "VISQOL":
