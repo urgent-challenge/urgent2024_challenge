@@ -7,15 +7,18 @@ set -u
 set -o pipefail
 
 output_dir="./libritts"
+mkdir -p "${output_dir}"
 
 #################################
 # Download data
 #################################
 # Refer to https://www.openslr.org/60/
-for name in train-clean-100 train-clean-360 dev-clean; do
-    url="https://www.openslr.org/resources/60/${name}.tar.gz"
-    wget --continue "$url" -O "${output_dir}/${name}.tar.gz"
-done
+# download in parallel using xargs
+echo "Download LibriTTS data from https://www.openslr.org/60/"
+urlbase="https://www.openslr.org/resources/60"
+echo "train-clean-100 train-clean-360 dev-clean" | tr " " "\n" \
+    | xargs -n 1 -P 3 -I{} \
+    wget --no-check-certificate --continue "${urlbase}/{}.tar.gz" -O "${output_dir}/{}.tar.gz"
 for x in "${output_dir}"/*.tar.gz; do                                                 
     tar xfv "$x" -C "${output_dir}"
 done
@@ -24,34 +27,32 @@ done
 # Data preprocessing
 #################################
 mkdir -p tmp
-python utils/estimate_audio_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
     --audio_dir "${output_dir}/LibriTTS/train-clean-100/" "${output_dir}/LibriTTS/train-clean-360/" \
     --audio_format wav \
     --chunksize 1000 \
-    --nj 4 \
+    --nj 8 \
     --outfile tmp/libritts_train.json
 
-python utils/estimate_audio_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
     --audio_dir "${output_dir}/LibriTTS/dev-clean/" \
     --audio_format wav \
     --chunksize 1000 \
-    --nj 4 \
+    --nj 8 \
     --outfile tmp/libritts_validation.json
 
-python utils/resample_to_estimated_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/libritts_train.json \
    --out_scpfile libritts_resampled_train.scp \
    --outdir "${output_dir}/resampled/train" \
-   --resample_type "kaiser_best" \
-   --nj 4 \
+   --nj 8 \
    --chunksize 1000
 
-python utils/resample_to_estimated_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/libritts_validation.json \
    --out_scpfile libritts_resampled_validation.scp \
    --outdir "${output_dir}/resampled/dev" \
-   --resample_type "kaiser_best" \
-   --nj 4 \
+   --nj 8 \
    --chunksize 1000
 
 awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_train.scp > libritts_resampled_train.utt2spk

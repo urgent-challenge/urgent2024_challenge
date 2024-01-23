@@ -45,6 +45,13 @@ if __name__ == "__main__":
         help="Number of digits in the subdirectory name",
     )
     parser.add_argument(
+        "--target_suffix",
+        type=str,
+        nargs="+",
+        default=[".wav", ".flac", ".mp3"],
+        help="Suffix of the files that need to be divided into subfolder",
+    )
+    parser.add_argument(
         "--skip_existing",
         action="store_true",
         help="Skip existing files",
@@ -60,7 +67,7 @@ if __name__ == "__main__":
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.input:
-        tf_kwargs = {"name": args.input.name, "mode": "r:*"}
+        tf_kwargs = {"name": args.input, "mode": "r:*"}
     elif args.pipe:
         tf_kwargs = {"fileobj": sys.stdin.buffer, "mode": "r|*"}
     else:
@@ -76,7 +83,6 @@ if __name__ == "__main__":
         idx = 0
         t = tqdm.tqdm()
         while True:
-
             try:
                 member = tar.next()
             except tarfile.ReadError:
@@ -95,31 +101,47 @@ if __name__ == "__main__":
             if path.startswith("/"):
                 path = path[1:]
             path = Path(path)
-            name = path.name
-            subdir = f"{dir_number:0{num_digits}x}"
-            path = path.parent / f"{subdir}/{name}"
-            output_path = args.output_dir / path
 
-            # create the sub-directory if it does not exist
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-
-            if not (output_path.exists() and args.skip_existing):
-                # Extract the file
-                # we don't use the tar.extract method because it does not allow
-                # to rename the file as we want
+            if path.suffix not in args.target_suffix:
+                # extract to regular directory
                 try:
-                    f = tar.extractfile(member)
-                    with open(output_path, "wb") as fout:
-                        shutil.copyfileobj(f, fout)
+                    tar.extract(member, args.output_dir)
                 except tarfile.ReadError as e:
                     if args.skip_errors:
                         continue
                     else:
                         raise e
 
-            file_number += 1
-            if file_number == args.max_files:
-                file_number = 0
-                dir_number += 1
+            else:
+                # insert sub-directory into the path
+                name = path.name
+                subdir = f"{dir_number:0{num_digits}x}"
+                path = path.parent / f"{subdir}/{name}"
+                output_path = args.output_dir / path
+
+                # create the sub-directory if it does not exist
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                if not (output_path.exists() and args.skip_existing):
+                    # Extract the file
+                    # we don't use the tar.extract method because it does not allow
+                    # to rename the file as we want
+                    try:
+                        f = tar.extractfile(member)
+                        if f is None:
+                            # we are skipping things that are not files/links
+                            continue
+                        with open(output_path, "wb") as fout:
+                            shutil.copyfileobj(f, fout)
+                    except tarfile.ReadError as e:
+                        if args.skip_errors:
+                            continue
+                        else:
+                            raise e
+
+                file_number += 1
+                if file_number == args.max_files:
+                    file_number = 0
+                    dir_number += 1
 
             t.update(n=1)

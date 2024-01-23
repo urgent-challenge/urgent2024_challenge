@@ -7,6 +7,7 @@ set -u
 set -o pipefail
 
 output_dir="./epic_sounds_noise"
+mkdir -p ${output_dir}
 
 #################################
 # EPIC-SOUNDS noise (~48 kHz)
@@ -14,7 +15,9 @@ output_dir="./epic_sounds_noise"
 if [ ! -d "${output_dir}/EPIC-KITCHENS-100/P01" ]; then
     # echo "Please manually download the EPIC-KITCHENS-100 data by following https://github.com/epic-kitchens/epic-kitchens-download-scripts and put them under the directory '${output_dir}/EPIC-KITCHENS-100/'"
     git clone https://github.com/epic-kitchens/epic-kitchens-download-scripts "${output_dir}/epic-kitchens-download-scripts"
-    python "${output_dir}"/epic-kitchens-download-scripts/epic_downloader.py --train --val --output-path "${output_dir}"
+    cd "${output_dir}/epic-kitchens-download-scripts"
+    python epic_downloader.py --train --val --output-path "../../${output_dir}"
+    cd -
 fi
 
 # extract audio from video files with the "original" sampling frequency

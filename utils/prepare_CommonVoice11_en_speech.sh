@@ -6,8 +6,8 @@ set -e
 set -u
 set -o pipefail
 
-dnsmos_model_dir=
-output_dir="./datasets_cv11_en"
+dnsmos_model_dir="./DNSMOS"
+output_dir="./datasets_cv11_en/cv-corpus-11.0-2022-09-21/en"
 
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
@@ -18,25 +18,26 @@ fi
 #################################
 if [ ! -d "${output_dir}/clips" ]; then
     echo "Please manually download the data from https://commonvoice.mozilla.org/en/datasets and save them under the directory '$output_dir'"
+    echo "Refer to the README for more details"
     exit 1
 fi
 
 #################################
 # Data preprocessing
 #################################
-mkdir -p tmp
-python utils/estimate_audio_bandwidth.py \
+#mkdir -p tmp
+OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
     --audio_dir "${output_dir}/clips/" \
     --audio_format mp3 \
     --chunksize 1000 \
     --nj 16 \
     --outfile tmp/commonvoice_11.0_en.json
 
-python utils/resample_to_estimated_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/commonvoice_11.0_en.json \
    --out_scpfile tmp/commonvoice_11.0_en_resampled.scp \
    --outdir "${output_dir}/resampled" \
-   --resample_type "kaiser_best" \
+   --max_files 5000 \
    --nj 8 \
    --chunksize 1000
 
@@ -63,7 +64,7 @@ python utils/filter_via_dnsmos.py \
     --score_name BAK --threshold 3.0
 
 # remove non-speech samples
-python utils/filter_via_vad.py \
+OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
     --scp_path "tmp/commonvoice_11.0_en_resampled_filtered.scp" \
     --outfile "tmp/commonvoice_11.0_en_resampled_filtered_vad.scp" \
     --vad_mode 2 \

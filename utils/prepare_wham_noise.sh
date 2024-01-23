@@ -7,6 +7,7 @@ set -u
 set -o pipefail
 
 output_dir="./wham_noise_48k"
+mkdir -p "${output_dir}"
 
 #################################
 # WHAM! noise (48 kHz, unsegmented)

@@ -6,6 +6,7 @@ set -e
 set -u
 set -o pipefail
 
+# please do not add a trailing slash
 output_dir="./dns5_fullband"
 
 #################################
@@ -30,8 +31,35 @@ for blob_name in ${BLOB_NAMES[@]}; do
     url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset/${blob_name}"
     wget --continue "$url" -O "${output_dir}/${blob_name}"
 done
-for x in "${output_dir}"/noise_fullband/*.tar.bz2; do                                                 
-    tar xfv "$x" -C "${output_dir}"
+ parallel download
+mkdir -p "${output_dir}/noise_fullband"
+url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset"
+echo noise_fullband/datasets_fullband.noise_fullband.audioset_00{0..6}.tar.bz2 \
+    | tr " " "\n" \
+    | xargs -n 1 -P 7 -I{} wget --continue "$url/{}" -O "${output_dir}/{}"
+echo noise_fullband/datasets_fullband.noise_fullband.freesound_00{0,1}.tar.bz2 \
+    | tr " " "\n" \
+    | xargs -n 1 -P 2 -I{} wget --continue "$url/{}" -O "${output_dir}/{}"
+wget --continue "$url/datasets_fullband.impulse_responses_000.tar.bz2" \
+    -O "${output_dir}/datasets_fullband.impulse_responses_000.tar.bz2"
+
+# tar --transform : to transform path with SED regular expression
+# tar xfv dns5_fullband/noise_fullband/datasets_fullband.noise_fullband.freesound_000.tar.bz2 \
+#   -C dns5_fullband/noise_fullband \
+#   --transform 's/datasets_fullband\/noise_fullband/freesound_000/'
+trans="s/datasets_fullband\/noise_fullband//"
+for sub in audioset freesound; do
+    if [ ${sub} -eq audioset ]; then
+        n=6
+    else
+        n=1
+    fi
+    for idx in `seq 0 ${n}`; do
+        archive="${output_dir}/noise_fullband/datasets_fullband.noise_fullband.${sub}_00${idx}.tar.bz2"
+        xdir="${output_dir}/datasets_fullband/noise_fullband/${sub}_00${idx}"
+        mkdir -p ${xdir}
+        tar xfv "${archive}" --transform ${trans} -C "${xdir}"
+    done
 done
 tar xfv "${output_dir}"/datasets_fullband.impulse_responses_000.tar.bz2 -C "${output_dir}"
 
@@ -39,19 +67,18 @@ tar xfv "${output_dir}"/datasets_fullband.impulse_responses_000.tar.bz2 -C "${ou
 # Data preprocessing
 #################################
 mkdir -p tmp
-python utils/estimate_audio_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
     --audio_dir ${output_dir}/datasets_fullband/noise_fullband/ \
     --audio_format wav \
     --chunksize 1000 \
-    --nj 4 \
+    --nj 8 \
     --outfile tmp/dns5_noise.json
 
-python utils/resample_to_estimated_bandwidth.py \
+OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/dns5_noise.json \
    --out_scpfile tmp/dns5_noise_resampled.scp \
    --outdir "${output_dir}/resampled/noise" \
-   --resample_type "kaiser_best" \
-   --nj 4 \
+   --nj 8 \
    --chunksize 1000
  
 python - <<'EOF'
@@ -78,9 +105,11 @@ with open("dns5_noise_resampled_train.scp", "w") as f:
         f.write(line)
 EOF
 
-find "${output_dir}/datasets_fullband/impulse_response/" -iname '*.wav' | \
+find "${output_dir}/datasets_fullband/impulse_responses/" -iname '*.wav' | \
     awk -F'/' '{fname=substr($NF, 1, length($NF)-4); fname=$(NF-2)"-"fname; print(fname" 48000 "$0)}' | \
     sort -u > dns5_rirs.scp
+
+# split of RIRs into train/validation is missing...
 
 #--------------------------------
 # Output file:

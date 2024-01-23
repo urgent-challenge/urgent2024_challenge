@@ -35,7 +35,6 @@ OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --bandwidth_data tmp/dns5_clean_read_speech.json \
    --out_scpfile tmp/dns5_clean_read_speech_resampled.scp \
    --outdir "${output_dir}/Track1_Headset/resampled/clean/read_speech" \
-   --resample_type "kaiser_best" \
    --max_files 5000 \
    --nj 8 \
    --chunksize 1000
