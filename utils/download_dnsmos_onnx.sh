@@ -2,6 +2,13 @@
 # Description: Download the DNSMOS models from the DNS Challenge repository
 # Author: Robin Scheibler
 # Date: 2024-01-08
+
+# Set bash to 'debug' mode, it will exit on :
+# -e 'error', -u 'undefined variable', -o ... 'error in pipeline', -x 'print commands',
+set -e
+set -u
+set -o pipefail
+
 mkdir -p DNSMOS/DNSMOS
 
 URL=https://github.com/microsoft/DNS-Challenge/raw/master/DNSMOS/DNSMOS
@@ -9,5 +16,5 @@ URL=https://github.com/microsoft/DNS-Challenge/raw/master/DNSMOS/DNSMOS
 MODELS=(bak_ovr.onnx model_v8.onnx sig.onnx sig_bak_ovr.onnx)
 
 for model in ${MODELS[@]}; do
-    wget -O DNSMOS/$model $URL/$model
+    wget -c -O DNSMOS/$model $URL/$model
 done

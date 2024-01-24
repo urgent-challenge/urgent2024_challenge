@@ -9,8 +9,25 @@ from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
 
+from mcd_utils import calculate as calculate_mcd
 
-METRICS = ("PESQ", "ESTOI", "SDR", "MCD", "VISQOL")
+
+METRICS = ("PESQ", "ESTOI", "SDR", "LSD", "MCD", "VISQOL")
+
+if "VISQOL" in METRICS:
+    from visqol import visqol_lib_py
+    from visqol.pb2 import visqol_config_pb2
+
+    visqol_config = visqol_config_pb2.VisqolConfig()
+    # 16kHz for speech mode
+    visqol_config.audio.sample_rate = 16000
+    visqol_config.options.use_speech_scoring = True
+    svr_model_path = "lattice_tcditugenmeetpackhref_ls2_nl60_lr12_bs2048_learn.005_ep2400_train1_7_raw.tflite"
+    visqol_config.options.svr_model_path = str(
+        Path(visqol_lib_py.__file__).parent / "model" / svr_model_path
+    )
+    visqol_api = visqol_lib_py.VisqolApi()
+    visqol_api.Create(visqol_config)
 
 
 ################################################################
@@ -44,16 +61,40 @@ def estoi_metric(ref, inf, fs=16000):
     return stoi(ref, inf, fs_sig=fs, extended=True)
 
 
-def mcd_metric(ref, inf):
+def lsd_metric(ref, inf, fs, nfft=0.032, hop=0.016, eps=1.0e-08):
+    """Calculate Log-Spectral Distance (LSD).
+
+    Args:
+        ref (np.ndarray): reference signal (time,)
+        inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
+        nfft (float): FFT length in seconds
+        hop (float): hop length in seconds
+        eps (float): epsilon value for numerical stability
+    Returns:
+        mcd (float): LSD value between [0, +inf)
+    """
+    nfft = int(fs * nfft)
+    hop = int(fs * hop)
+    # T x F
+    ref_spec = np.abs(librosa.stft(ref, hop_length=hop, n_fft=nfft)).T
+    inf_spec = np.abs(librosa.stft(inf, hop_length=hop, n_fft=nfft)).T
+    lsd = np.log10(ref_spec**2 / ((inf_spec + eps) ** 2) + eps) ** 2
+    lsd = np.mean(np.mean(lsd, axis=1) ** 0.5, axis=0)
+    return lsd
+
+
+def mcd_metric(ref, inf, fs):
     """Calculate Mel Cepstral Distortion (MCD).
 
     Args:
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
+        fs (int): sampling rate in Hz
     Returns:
-        mcd (float): MCD value (unbounded)
+        mcd (float): MCD value between [0, +inf)
     """
-    return
+    return calculate_mcd(ref, inf, fs)
 
 
 def pesq_metric(ref, inf, fs=8000):
@@ -75,6 +116,7 @@ def pesq_metric(ref, inf, fs=8000):
         mode = "wb"
         ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
         inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+        fs = 16000
     else:
         raise ValueError(
             "sample rate must be 8000 or 16000+ for PESQ evaluation, " f"but got {fs}"
@@ -101,15 +143,20 @@ def sdr_metric(ref, inf):
         ref (np.ndarray): reference signal (num_src, time)
         inf (np.ndarray): enhanced signal (num_src, time)
     Returns:
-        sdr (np.ndarray): SDR values (unbounded)
+        sdr (float): SDR values (unbounded)
     """
     assert ref.shape == inf.shape
+    if ref.ndim == 1:
+        ref = ref[None, :]
+        inf = inf[None, :]
+    else:
+        assert ref.ndim == 2, ref.shape
     num_src, _ = ref.shape
     sdr, sir, sar, perm = bss_eval_sources(ref, inf, compute_permutation=True)
-    return sdr
+    return float(np.mean(sdr))
 
 
-def visqol_metric(ref, inf, fs=48000):
+def visqol_metric(ref, inf, fs=16000):
     """Calculate Virtual Speech Quality Objective Listener (VISQOL).
 
     Reference: https://github.com/google/visqol
@@ -121,7 +168,13 @@ def visqol_metric(ref, inf, fs=48000):
     Returns:
         visqol (float): VISQOL value between [1, 5]
     """
-    return
+    ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
+    inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+    fs = 16000
+
+    similarity_result = visqol_api.Measure(ref, inf)
+
+    return similarity_result
 
 
 ################################################################
@@ -162,13 +215,13 @@ def main(args):
         for metric in METRICS:
             mean_score = np.nanmean([score[metric] for uid, score in ret])
             f.write(f"{metric}: {mean_score:.4f}\n")
-    print(f"Overall results have been written in {outdir / 'RESULTS.md'}", flush=True)
+    print(f"Overall results have been written in {outdir / 'RESULTS.txt'}", flush=True)
 
 
 def process_one_pair(data_pair):
     uid, ref_path, inf_path = data_pair
-    ref, fs = sf.read(ref_path)
-    inf, fs2 = sf.read(inf_path)
+    ref, fs = sf.read(ref_path, dtype="float32")
+    inf, fs2 = sf.read(inf_path, dtype="float32")
     assert fs == fs2, (fs, fs2)
     assert ref.shape == inf.shape, (ref.shape, inf.shape)
 
@@ -176,14 +229,15 @@ def process_one_pair(data_pair):
     for metric in METRICS:
         if metric == "PESQ":
             pesq_score = pesq_metric(ref, inf, fs=fs)
-            if pesq_score is not None:
-                scores[metric] = pesq_score
+            scores[metric] = pesq_score if pesq_score is not None else np.nan
         elif metric == "ESTOI":
             scores[metric] = estoi_metric(ref, inf, fs=fs)
         elif metric == "SDR":
             scores[metric] = sdr_metric(ref, inf)
+        elif metric == "LSD":
+            scores[metric] = lsd_metric(ref, inf, fs=fs)
         elif metric == "MCD":
-            scores[metric] = mcd_metric(ref, inf)
+            scores[metric] = mcd_metric(ref, inf, fs=fs)
         elif metric == "VISQOL":
             scores[metric] = visqol_metric(ref, inf, fs=fs)
         else:

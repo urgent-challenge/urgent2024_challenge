@@ -3,12 +3,13 @@ Official data preparation scripts for the URGENT 2024 Challenge
 
 ## Requirements
 
-- >8 Cores
-- At least 1 GPU (recommended for speedup in DNSMOS calculation)
+- `>8` Cores
+- At least `1` GPU (recommended for speedup in DNSMOS calculation)
 - XXX GB of free disk space
   - Speech
     - DNS5 speech (original + resampled): GB
     - CommonVoice English speech (original + resampled): GB
+    - LibriTTS (original + resampled): GB
     - VCTK: GB
     - WSJ: GB
   - Noise
@@ -46,3 +47,6 @@ With minimum specs, expects the whole process to take YYY hours.
 3. Run the script
 
     ./prepare_espnet_data.sh
+
+4. Install eSpeak-NG (used for the phoneme similarity metric computation)
+   - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux

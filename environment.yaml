@@ -9,9 +9,9 @@ dependencies:
   - torchvision
   - torchaudio
   - tensorboard
+  - matplotlib
   - numpy
   - scipy>=1.5.0
-  - matplotlib
   - seaborn
   - pandas
   - ipython

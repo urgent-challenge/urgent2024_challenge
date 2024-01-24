@@ -9,42 +9,34 @@ from tqdm.contrib.concurrent import process_map
 
 
 def estimate_bandwidth(audios, threshold=-50.0, nfft=512, hop=256, sample_rate=16000):
-#    ret = {}
-#    count = 0
-#    for uid, audio_path in tqdm(audios):
-        uid, audio_path = audios
-        try:
-            audio, fs = sf.read(audio_path)
-        except:
-#            count += 1
-            print(f"Error: cannot open audio file '{audio_path}'. Skipping it", flush=True)
-            return
-#            continue
-        if audio.ndim > 1:
-            audio = audio.T
-        else:
-            audio = audio[None, :]
-        spec = torch.stft(
-            torch.from_numpy(audio),
-            n_fft=int(nfft / sample_rate * fs),
-            hop_length=int(hop / sample_rate * fs),
-            window=torch.hann_window(int(nfft / sample_rate * fs)),
-            onesided=True,
-            return_complex=True,
-        )
-        freq = torch.fft.rfftfreq(int(nfft / sample_rate * fs), d=1 / fs)
-        assert len(freq) == spec.size(1), (freq.shape, spec.shape)
-        power = spec.real.pow(2) + spec.imag.pow(2)
-        # (C, F, T) -> (C, F)
-        mean_power = power.mean(2)
-        peak = mean_power.max(1).values
-        min_energy = peak * 10 ** (threshold / 10)
-        for i in range(len(freq) - 1, -1, -1):
-            if mean_power[:, i].min() > min_energy:
-#                ret[uid] = [str(audio_path), freq[i].item()]
-                return uid, [str(audio_path), freq[i].item()]
-#                break
-#    return ret
+    uid, audio_path = audios
+    try:
+        audio, fs = sf.read(audio_path)
+    except:
+        print(f"Error: cannot open audio file '{audio_path}'. Skipping it", flush=True)
+        return
+    if audio.ndim > 1:
+        audio = audio.T
+    else:
+        audio = audio[None, :]
+    spec = torch.stft(
+        torch.from_numpy(audio),
+        n_fft=int(nfft / sample_rate * fs),
+        hop_length=int(hop / sample_rate * fs),
+        window=torch.hann_window(int(nfft / sample_rate * fs)),
+        onesided=True,
+        return_complex=True,
+    )
+    freq = torch.fft.rfftfreq(int(nfft / sample_rate * fs), d=1 / fs)
+    assert len(freq) == spec.size(1), (freq.shape, spec.shape)
+    power = spec.real.pow(2) + spec.imag.pow(2)
+    # (C, F, T) -> (C, F)
+    mean_power = power.mean(2)
+    peak = mean_power.max(1).values
+    min_energy = peak.min() * 10 ** (threshold / 10)
+    for i in range(len(freq) - 1, -1, -1):
+        if mean_power[:, i].min() > min_energy:
+            return uid, [str(audio_path), freq[i].item()]
 
 
 if __name__ == "__main__":

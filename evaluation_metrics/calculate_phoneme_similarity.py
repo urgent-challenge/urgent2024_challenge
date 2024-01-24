@@ -4,38 +4,87 @@ import librosa
 import numpy as np
 import soundfile as sf
 import torch
+from Levenshtein import distance
+from torch.nn import Module
 from tqdm import tqdm
+from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 
-from espnet2.bin.spk_inference import Speech2Embedding
 
-
-METRICS = ("SpeakerSimilarity",)
+METRICS = ("PhonemeSimilarity",)
 TARGET_FS = 16000
 
 
 ################################################################
 # Definition of metrics
 ################################################################
-def speaker_similarity_metric(model, ref, inf, fs=16000):
-    """Calculate the cosine similarity between ref and inf speaker embeddings.
+class PhonemePredictor(Module):
+    # espeak installation is required for this function to work
+    # To install, try
+    # https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
+    def __init__(
+        self, checkpoint="facebook/wav2vec2-lv-60-espeak-cv-ft", sr=16000, device="cpu"
+    ):
+        # https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft
+        super().__init__()
+        self.processor = Wav2Vec2Processor.from_pretrained(checkpoint)
+        self.model = Wav2Vec2ForCTC.from_pretrained(checkpoint).to(device=device)
+        self.sr = sr
+        self.device = device
+
+    def forward(self, waveform):
+        input_values = self.processor(
+            waveform, return_tensors="pt", sampling_rate=self.sr
+        ).input_values
+        # retrieve logits
+        logits = self.model(input_values.to(device=self.device)).logits
+
+        # take argmax and decode
+        predicted_ids = torch.argmax(logits, dim=-1)
+        return self.processor.batch_decode(predicted_ids)
+
+
+class LevenshteinPhonemeSimilarity:
+    """Levenshtein Phoneme Similarity.
+
+    Reference:
+        J. Pirklbauer, M. Sach, K. Fluyt, W. Tirry, W. Wardah, S. Moeller,
+        and T. Fingscheidt, “Evaluation metrics for generative speech enhancement
+        methods: Issues and perspectives,” in Speech Communication; 15th ITG Conference,
+        2023, pp. 265-269.
+        https://ieeexplore.ieee.org/document/10363040
+    """
+
+    def __init__(self, device="cpu"):
+        self.phoneme_predictor = PhonemePredictor(device=device)
+
+    def __call__(self, reference: np.ndarray, sample: np.ndarray) -> float:
+        sample_phonemes = self.phoneme_predictor(sample)[0].replace(" ", "")
+        ref_phonemes = self.phoneme_predictor(reference)[0].replace(" ", "")
+        if len(ref_phonemes) == 0:
+            return np.nan
+        lev_distance = distance(sample_phonemes, ref_phonemes)
+        return 1 - lev_distance / len(ref_phonemes)
+
+
+def phoneme_similarity_metric(model, ref, inf, fs=16000):
+    """Calculate the similarity between ref and inf phoneme sequences.
 
     Args:
-        model (torch.nn.Module): speaker model
-            Please use the model in https://huggingface.co/espnet/voxcelebs12_rawnet3
+        model (torch.nn.Module): phoneme recognition model
+            Please use the model in
+            https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft
             to get comparable results.
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
         fs (int): sampling rate in Hz
     Returns:
-        similarity (float): cosine similarity value between [0, 1]
+        similarity (float): phoneme similarity value between (-inf, 1]
     """
     if fs != TARGET_FS:
         ref = librosa.resample(ref, orig_sr=fs, target_sr=TARGET_FS)
         inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
     with torch.no_grad():
-        ref_emb = model(ref)
-        inf_emb = model(inf)
-        similarity = torch.cosine_similarity(ref_emb, inf_emb, dim=-1).item()
+        similarity = model(ref, inf)
     return similarity
 
 
@@ -73,10 +122,8 @@ def main(args):
         metric: (outdir / f"{metric}{suffix}.scp").open("w") for metric in METRICS
     }
 
-    model = Speech2Embedding.from_pretrained(
-        model_tag="espnet/voxcelebs12_rawnet3", device=args.device
-    )
-    model.spk_model.eval()
+    model = LevenshteinPhonemeSimilarity(device=args.device)
+    model.phoneme_predictor.eval()
     ret = []
     for uid, ref_audio, inf_audio in tqdm(data_pairs):
         _, score = process_one_pair((uid, ref_audio, inf_audio), model=model)
@@ -107,8 +154,8 @@ def process_one_pair(data_pair, model=None):
 
     scores = {}
     for metric in METRICS:
-        if metric == "SpeakerSimilarity":
-            scores[metric] = speaker_similarity_metric(model, ref, inf, fs=fs)
+        if metric == "PhonemeSimilarity":
+            scores[metric] = phoneme_similarity_metric(model, ref, inf, fs=fs)
         else:
             raise NotImplementedError(metric)
 

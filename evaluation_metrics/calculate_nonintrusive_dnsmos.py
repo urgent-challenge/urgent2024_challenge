@@ -1,3 +1,4 @@
+from distutils.util import strtobool
 from pathlib import Path
 
 import librosa
@@ -6,54 +7,46 @@ import soundfile as sf
 import torch
 from tqdm import tqdm
 
-from espnet2.bin.spk_inference import Speech2Embedding
+from espnet2.enh.layers.dnsmos import DNSMOS_local
 
 
-METRICS = ("SpeakerSimilarity",)
+METRICS = ("DNSMOS_OVRL",)
 TARGET_FS = 16000
+
+
+def str2bool(value: str) -> bool:
+    return bool(strtobool(value))
 
 
 ################################################################
 # Definition of metrics
 ################################################################
-def speaker_similarity_metric(model, ref, inf, fs=16000):
-    """Calculate the cosine similarity between ref and inf speaker embeddings.
+def dnsmos_metric(model, audio, fs=16000):
+    """Calculate the DNSMOS metric.
 
     Args:
-        model (torch.nn.Module): speaker model
-            Please use the model in https://huggingface.co/espnet/voxcelebs12_rawnet3
-            to get comparable results.
-        ref (np.ndarray): reference signal (time,)
-        inf (np.ndarray): enhanced signal (time,)
+        model (torch.nn.Module): DNSMOS model
+        audio (np.ndarray): enhanced signal (time,)
         fs (int): sampling rate in Hz
     Returns:
-        similarity (float): cosine similarity value between [0, 1]
+        dnsmos (float): DNSMOS OVRL value between [1, 5]
     """
     if fs != TARGET_FS:
-        ref = librosa.resample(ref, orig_sr=fs, target_sr=TARGET_FS)
-        inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
+        audio = librosa.resample(audio, orig_sr=fs, target_sr=TARGET_FS)
     with torch.no_grad():
-        ref_emb = model(ref)
-        inf_emb = model(inf)
-        similarity = torch.cosine_similarity(ref_emb, inf_emb, dim=-1).item()
-    return similarity
+        dnsmos_score = model(audio, fs)
+    return float(dnsmos_score["OVRL"])
 
 
 ################################################################
 # Main entry
 ################################################################
 def main(args):
-    refs = {}
-    with open(args.ref_scp, "r") as f:
-        for line in f:
-            uid, audio_path = line.strip().split()
-            refs[uid] = audio_path
-
     data_pairs = []
     with open(args.inf_scp, "r") as f:
         for line in f:
             uid, audio_path = line.strip().split()
-            data_pairs.append((uid, refs[uid], audio_path))
+            data_pairs.append((uid, audio_path))
 
     size = len(data_pairs)
     assert 1 <= args.job <= args.nsplits <= size
@@ -73,13 +66,29 @@ def main(args):
         metric: (outdir / f"{metric}{suffix}.scp").open("w") for metric in METRICS
     }
 
-    model = Speech2Embedding.from_pretrained(
-        model_tag="espnet/voxcelebs12_rawnet3", device=args.device
+    if not Path(args.primary_model).exists():
+        raise ValueError(
+            f"The primary model '{args.primary_model}' doesn't exist."
+            " You can download the model from https://github.com/microsoft/"
+            "DNS-Challenge/tree/master/DNSMOS/DNSMOS/sig_bak_ovr.onnx"
+        )
+    if not Path(args.p808_model).exists():
+        raise ValueError(
+            f"The P808 model '{args.p808_model}' doesn't exist."
+            " You can download the model from https://github.com/microsoft/"
+            "DNS-Challenge/tree/master/DNSMOS/DNSMOS/model_v8.onnx"
+        )
+
+    use_gpu = True if "cuda" in args.device else False
+    model = DNSMOS_local(
+        args.primary_model,
+        args.p808_model,
+        use_gpu=use_gpu,
+        convert_to_torch=args.convert_to_torch,
     )
-    model.spk_model.eval()
     ret = []
-    for uid, ref_audio, inf_audio in tqdm(data_pairs):
-        _, score = process_one_pair((uid, ref_audio, inf_audio), model=model)
+    for uid, inf_audio in tqdm(data_pairs):
+        _, score = process_one_pair((uid, inf_audio), model=model)
         ret.append((uid, score))
         for metric, value in score.items():
             writers[metric].write(f"{uid} {value}\n")
@@ -98,17 +107,14 @@ def main(args):
 
 
 def process_one_pair(data_pair, model=None):
-    uid, ref_path, inf_path = data_pair
-    ref, fs = sf.read(ref_path, dtype="float32")
-    inf, fs2 = sf.read(inf_path, dtype="float32")
-    assert fs == fs2, (fs, fs2)
-    assert ref.shape == inf.shape, (ref.shape, inf.shape)
-    assert ref.ndim == 1, ref.shape
+    uid, inf_path = data_pair
+    inf, fs = sf.read(inf_path, dtype="float32")
+    assert inf.ndim == 1, inf.shape
 
     scores = {}
     for metric in METRICS:
-        if metric == "SpeakerSimilarity":
-            scores[metric] = speaker_similarity_metric(model, ref, inf, fs=fs)
+        if metric == "DNSMOS_OVRL":
+            scores[metric] = dnsmos_metric(model, inf, fs=fs)
         else:
             raise NotImplementedError(metric)
 
@@ -119,12 +125,6 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--ref_scp",
-        type=str,
-        required=True,
-        help="Path to the scp file containing reference signals",
-    )
     parser.add_argument(
         "--inf_scp",
         type=str,
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         "--device",
         type=str,
         default="cpu",
-        help="Device for running speaker embedding extraction",
+        help="Device for running DNSMOS calculation",
     )
     parser.add_argument(
         "--nsplits",
@@ -154,6 +154,26 @@ if __name__ == "__main__":
         type=int,
         default=1,
         help="Index of the current node (starting from 1)",
+    )
+
+    group = parser.add_argument_group("DNSMOS related")
+    group.add_argument(
+        "--convert_to_torch",
+        type=str2bool,
+        default=False,
+        help="Convert onnx to PyTorch by using onnx2torch",
+    )
+    group.add_argument(
+        "--primary_model",
+        type=str,
+        default="./DNSMOS/sig_bak_ovr.onnx",
+        help="Path to the primary DNSMOS model.",
+    )
+    group.add_argument(
+        "--p808_model",
+        type=str,
+        default="./DNSMOS/model_v8.onnx",
+        help="Path to the p808 model.",
     )
     args = parser.parse_args()
 
