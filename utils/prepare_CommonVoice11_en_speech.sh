@@ -55,6 +55,10 @@ if
 # Data filtering based on DNSMOS
 #################################
 DNSMOS_JSON_FILE=tmp/commonvoice_11.0_en_resampled_dnsmos.json
+DNSMOS_GZ_FILE="data/`basename ${DNSMOS_JSON_FILE}`.gz"
+if [ -f ${DNSMOS_GZ_FILE} ]; then
+    gunzip -c ${DNSMOS_GZ_FILE} > ${DNSMOS_JSON_FILE}
+fi
 if [ ! -f ${DNSMOS_JSON_FILE} ]; then
     python utils/get_dnsmos.py \
         --json_path "${RESAMP_SCP_FILE}" \
