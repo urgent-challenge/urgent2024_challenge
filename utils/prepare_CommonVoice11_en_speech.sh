@@ -25,52 +25,77 @@ fi
 #################################
 # Data preprocessing
 #################################
-#mkdir -p tmp
-OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
-    --audio_dir "${output_dir}/clips/" \
-    --audio_format mp3 \
-    --chunksize 1000 \
-    --nj 16 \
-    --outfile tmp/commonvoice_11.0_en.json
+mkdir -p tmp
+BW_EST_FILE=tmp/commonvoice_11.0_en.json
+if [ ! -f ${BW_EST_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+        --audio_dir "${output_dir}/clips/" \
+        --audio_format mp3 \
+        --chunksize 1000 \
+        --nj 16 \
+        --outfile ${BW_EST_FILE}
+else
+    echo "Estimated bandwidth file already exists. Delete ${BW_EST_FILE} if you want to re-estimate."
+fi
 
-OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/commonvoice_11.0_en.json \
-   --out_scpfile tmp/commonvoice_11.0_en_resampled.scp \
-   --outdir "${output_dir}/resampled" \
-   --max_files 5000 \
-   --nj 8 \
-   --chunksize 1000
+RESAMP_SCP_FILE=tmp/commonvoice_11.0_en_resampled.scp
+if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
+       --bandwidth_data ${BW_EST_FILE} \
+       --out_scpfile ${RESAMP_SCP_FILE} \
+       --outdir "${output_dir}/resampled" \
+       --max_files 5000 \
+       --nj 8 \
+       --chunksize 1000
+else
+    echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
+if
 
 #################################
 # Data filtering based on DNSMOS
 #################################
-python utils/get_dnsmos.py \
-    --json_path "tmp/commonvoice_11.0_en_resampled.scp" \
-    --outfile "tmp/commonvoice_11.0_en_resampled_dnsmos.json" \
-    --use_gpu True \
-    --convert_to_torch True \
-    --primary_model "${dnsmos_model_dir}/DNSMOS/sig_bak_ovr.onnx" \
-    --p808_model "${dnsmos_model_dir}/DNSMOS/model_v8.onnx" \
-    --nsplits 1 \
-    --job 1
+DNSMOS_JSON_FILE=tmp/commonvoice_11.0_en_resampled_dnsmos.json
+if [ ! -f ${DNSMOS_JSON_FILE} ]; then
+    python utils/get_dnsmos.py \
+        --json_path "${RESAMP_SCP_FILE}" \
+        --outfile "${DNSMOS_JSON_FILE}" \
+        --use_gpu True \
+        --convert_to_torch True \
+        --primary_model "${dnsmos_model_dir}/DNSMOS/sig_bak_ovr.onnx" \
+        --p808_model "${dnsmos_model_dir}/DNSMOS/model_v8.onnx" \
+        --nsplits 1 \
+        --job 1
+else
+    echo "DNSMOS json file already exists. Delete ${DNSMOS_JSON_FILE} if you want to re-estimate."
+fi
 
 # remove low-quality samples
-python utils/filter_via_dnsmos.py \
-    --scp_path "tmp/commonvoice_11.0_en_resampled.scp" \
-    --json_path "tmp/commonvoice_11.0_en_resampled_dnsmos.json" \
-    --outfile "tmp/commonvoice_11.0_en_resampled_filtered.scp" \
-    --score_name OVRL --threshold 3.0 \
-    --score_name SIG --threshold 3.0 \
-    --score_name BAK --threshold 3.0
+FILTERED_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered.scp
+if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    python utils/filter_via_dnsmos.py \
+        --scp_path "${RESAMP_SCP_FILE}" \
+        --json_path "${DNSMOS_JSON_FILE}" \
+        --outfile "${FILTERED_SCP_FILE}" \
+        --score_name OVRL --threshold 3.0 \
+        --score_name SIG --threshold 3.0 \
+        --score_name BAK --threshold 3.0
+else
+    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
+fi
 
 # remove non-speech samples
-OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
-    --scp_path "tmp/commonvoice_11.0_en_resampled_filtered.scp" \
-    --outfile "tmp/commonvoice_11.0_en_resampled_filtered_vad.scp" \
-    --vad_mode 2 \
-    --threshold 0.2 \
-    --nj 8 \
-    --chunksize 200
+VAD_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered_vad.scp
+if [ ! -f ${VAD_SCP_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
+        --scp_path "${FILTERED_SCP_FILE}" \
+        --outfile "${VAD_SCP_FILE}" \
+        --vad_mode 2 \
+        --threshold 0.2 \
+        --nj 8 \
+        --chunksize 200
+else
+    echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
+fi
 
 python utils/get_commonvoice_subset_split.py \
     --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
