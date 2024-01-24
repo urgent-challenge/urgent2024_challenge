@@ -10,7 +10,6 @@ set -o pipefail
 USE_EPIC_SOUNDS=0
 
 export PATH=$PATH:$PWD/utils
-
 output_dir="./data"
 ################################################################
 # Note:
@@ -103,7 +102,12 @@ done
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
-utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir}"/speech_train "${output_dir}"/tmp/dns5_librivox_train "${output_dir}"/tmp/libritts_train "${output_dir}"/tmp/vctk_train #"${output_dir}"/tmp/wsj_train
+utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir}"/speech_train \
+    "${output_dir}"/tmp/dns5_librivox_train \
+    "${output_dir}"/tmp/libritts_train \
+    "${output_dir}"/tmp/vctk_train \
+    "${output_dir}"/tmp/commonvoice_11_en_train \
+    #"${output_dir}"/tmp/wsj_train
 
 ################################
 # Noise and RIR data
