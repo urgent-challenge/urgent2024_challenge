@@ -116,7 +116,7 @@ utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir
 
 ./utils/prepare_wham_noise.sh
 
-if [ USE_EPIC_SOUNDS -eq 1 ]; then
+if [ $USE_EPIC_SOUNDS -eq 1 ]; then
     ./utils/prepare_epic_sounds_noise.sh
 
     # Combine all data for the training set
