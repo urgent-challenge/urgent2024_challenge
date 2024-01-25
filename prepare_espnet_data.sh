@@ -145,7 +145,7 @@ OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
     --chunksize 200
 
 mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
-if [ USE_EPIC_SOUNDS -eq 1 ]; then
+if [ $USE_EPIC_SOUNDS -eq 1 ]; then
     mv epic_sounds_noise_resampled_validation.scp "${output_dir}/tmp/"
 fi
 
