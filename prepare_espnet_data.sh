@@ -6,8 +6,10 @@ set -e
 set -u
 set -o pipefail
 
-export PATH=$PATH:$PWD/utils
+# set to 1 if you want to use epic sounds database
+USE_EPIC_SOUNDS=0
 
+export PATH=$PATH:$PWD/utils
 output_dir="./data"
 ################################################################
 # Note:
@@ -100,7 +102,12 @@ done
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
-utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir}"/speech_train "${output_dir}"/tmp/dns5_librivox_train "${output_dir}"/tmp/libritts_train "${output_dir}"/tmp/vctk_train #"${output_dir}"/tmp/wsj_train
+utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir}"/speech_train \
+    "${output_dir}"/tmp/dns5_librivox_train \
+    "${output_dir}"/tmp/libritts_train \
+    "${output_dir}"/tmp/vctk_train \
+    "${output_dir}"/tmp/commonvoice_11_en_train \
+    #"${output_dir}"/tmp/wsj_train
 
 ################################
 # Noise and RIR data
@@ -109,27 +116,38 @@ utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir
 
 ./utils/prepare_wham_noise.sh
 
-./utils/prepare_epic_sounds_noise.sh
+if [ $USE_EPIC_SOUNDS -eq 1 ]; then
+    ./utils/prepare_epic_sounds_noise.sh
 
-# Combine all data for the training set
-awk '{print $3}' dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp > "${output_dir}/noise_train.scp"
+    # Combine all data for the training set
+    awk '{print $3}' dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp > "${output_dir}/noise_train.scp"
+    mv dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp "${output_dir}/tmp/"
+else
+    # Combine all data but EPIC for the training set
+    awk '{print $3}' dns5_noise_resampled_train.scp wham_noise_train.scp > "${output_dir}/noise_train.scp"
+    mv dns5_noise_resampled_train.scp wham_noise_train.scp "${output_dir}/tmp/"
+fi
+
+# Combine all the rir data for the training set
 awk '{print $3}' dns5_rirs.scp > "${output_dir}/rir_train.scp"
-
-mv dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp "${output_dir}/tmp/"
 
 ##########################################
 # Data simulation for the validation set
 ##########################################
 # Note: remember to modify placeholders in conf/simulation_validation.yaml before simulation.
+mkdir -p simulation_validation/log
 python simulation/generate_data_param.py --config conf/simulation_validation.yaml
 # It takes ~30 minutes to finish simulation with nj=8
-python simulation/simulate_data_from_param.py \
+OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
     --config conf/simulation_validation.yaml \
     --meta_tsv simulation_validation/log/meta.tsv \
     --nj 8 \
     --chunksize 200
 
-mv dns5_noise_resampled_validation.scp wham_noise_validation.scp epic_sounds_noise_resampled_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
+mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
+if [ $USE_EPIC_SOUNDS -eq 1 ]; then
+    mv epic_sounds_noise_resampled_validation.scp "${output_dir}/tmp/"
+fi
 
 mkdir -p "${output_dir}"/validation
 awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="noisy_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/wav.scp 

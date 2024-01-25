@@ -27,9 +27,26 @@ With minimum specs, expects the whole process to take YYY hours.
 
 1. Install environmemnt. Python 3.10 and Torch 2.0.1 are recommended.
    With Anaconda, just run
-      conda env create -f environment.yaml
-      conda activate urgent
-2. Install eSpeak-NG (used for the phoneme similarity metric computation)
-   - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
+
+    conda env create -f environment.yaml
+    conda activate urgent
+
+2. Download Commonvoice dataset v11 from https://commonvoice.mozilla.org/en/datasets
+    a. Select `Common Voice Corpus 11.0`
+    b. Enter your email and check the two mandatory boxes
+    c. Right-click the `Download Dataset Bundle` button and select "Copy link"
+    d. Enter the following commands in your terminal
+
+        URL="<paste-link>"
+        wget $URL -O ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz
+        python ./utils/tar_extractor.py -m 5000 \
+            -i ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz \
+            -o ./datasets_cv11_en \
+            --skip_existing --skip_errors 
+
 3. Run the script
-      ./prepare_espnet_data.sh
+
+    ./prepare_espnet_data.sh
+
+4. Install eSpeak-NG (used for the phoneme similarity metric computation)
+   - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux

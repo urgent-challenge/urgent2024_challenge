@@ -10,8 +10,8 @@ speech_utt2spk:
 - vctk_train.utt2spk
 - commonvoice_11.0_en_resampled_filtered_train.utt2spk
 
-log_dir: /path/to/simulation_train/log
-output_dir: /path/to/simulation_train
+log_dir: simulation_train/log
+output_dir: simulation_train
 repeat_per_utt: 1
 seed: 0
 

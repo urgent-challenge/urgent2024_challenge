@@ -12,7 +12,7 @@ from tqdm.contrib.concurrent import process_map
 sampling_rates = (8000, 16000, 22050, 24000, 32000, 44100, 48000)
 
 
-def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits, outdir, resample_type="kaiser_best"):
+def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits, outdir):
     audio_path, est_bandwidth = path_bw
     try:
         audio, fs = sf.read(audio_path)
@@ -27,15 +27,6 @@ def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits,
     if est_fs == fs:
         return audio_path, fs
 
-    """
-    if audio.ndim > 1:
-        audio = audio.T
-    audio = librosa.resample(
-        audio, orig_sr=fs, target_sr=est_fs, res_type=resample_type
-    )
-    if audio.ndim > 1:
-        audio = audio.T
-    """
     audio = soxr.resample(audio, fs, est_fs)
 
     subdir = f"{idx // max_files_per_dir:0{num_digits}x}"
@@ -64,9 +55,6 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="Output directory for storing resampled audios",
-    )
-    parser.add_argument(
-        "--resample_type", type=str, default="kaiser_best", help="Resampling type"
     )
     parser.add_argument("--nj", type=int, default=1, help="Number of parallel jobs")
     parser.add_argument(
@@ -104,7 +92,6 @@ if __name__ == "__main__":
             max_files_per_dir=args.max_files,
             num_digits=num_digits,
             outdir=args.outdir,
-            resample_type=args.resample_type,
         ),
         audios,
         indices,

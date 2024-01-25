@@ -10,8 +10,8 @@ speech_utt2spk:
 - libritts_resampled_validation.utt2spk
 - vctk_validation.utt2spk
 
-log_dir: /path/to/simulation_validation/log
-output_dir: /path/to/simulation_validation
+log_dir: simulation_validation/log
+output_dir: simulation_validation
 repeat_per_utt: 1
 seed: 0
 

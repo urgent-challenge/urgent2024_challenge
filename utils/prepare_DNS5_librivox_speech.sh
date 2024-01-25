@@ -24,50 +24,78 @@ fi
 # Data preprocessing
 #################################
 mkdir -p tmp
-OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
-    --audio_dir ${output_dir}/Track1_Headset/mnt/dnsv5/clean/read_speech/ \
-    --audio_format wav \
-    --chunksize 1000 \
-    --nj 8 \
-    --outfile tmp/dns5_clean_read_speech.json
+BW_EST_FILE=tmp/dns5_clean_read_speech.json
+if [ ! -f ${BW_EST_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+        --audio_dir ${output_dir}/Track1_Headset/mnt/dnsv5/clean/read_speech/ \
+        --audio_format wav \
+        --chunksize 1000 \
+        --nj 8 \
+        --outfile ${BW_EST_FILE}
+else
+    echo "Estimated bandwidth file already exists. Delete ${BW_EST_FILE} if you want to re-estimate."
+fi
 
-OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/dns5_clean_read_speech.json \
-   --out_scpfile tmp/dns5_clean_read_speech_resampled.scp \
-   --outdir "${output_dir}/Track1_Headset/resampled/clean/read_speech" \
-   --resample_type "kaiser_best" \
-   --max_files 5000 \
-   --nj 8 \
-   --chunksize 1000
+RESAMP_SCP_FILE=tmp/dns5_clean_read_speech_resampled.scp
+if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
+       --bandwidth_data ${BW_EST_FILE} \
+       --out_scpfile ${RESAMP_SCP_FILE} \
+       --outdir "${output_dir}/Track1_Headset/resampled/clean/read_speech" \
+       --max_files 5000 \
+       --nj 8 \
+       --chunksize 1000
+else
+    echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
+fi
 
 #################################
 # Data filtering based on DNSMOS
 #################################
-python utils/get_dnsmos.py \
-    --json_path "tmp/dns5_clean_read_speech_resampled.scp" \
-    --outfile "tmp/dns5_clean_read_speech_resampled_dnsmos.json" \
-    --use_gpu True \
-    --convert_to_torch True \
-    --primary_model "${dnsmos_model_dir}/DNSMOS/sig_bak_ovr.onnx" \
-    --p808_model "${dnsmos_model_dir}/DNSMOS/model_v8.onnx" \
-    --nsplits 1 \
-    --job 1
+DNSMOS_JSON_FILE="tmp/dns5_clean_read_speech_resampled_dnsmos.json"
+DNSMOS_GZ_FILE="data/`basename ${DNSMOS_JSON_FILE}`.gz"
+if [ -f ${DNSMOS_GZ_FILE} ]; then
+    gunzip -c ${DNSMOS_GZ_FILE} > ${DNSMOS_JSON_FILE}
+fi
+if [ ! -f ${DNSMOS_JSON_FILE} ]; then
+    python utils/get_dnsmos.py \
+        --json_path ${RESAMP_SCP_FILE} \
+        --outfile ${DNSMOS_JSON_FILE} \
+        --use_gpu True \
+        --convert_to_torch True \
+        --primary_model "${dnsmos_model_dir}/DNSMOS/sig_bak_ovr.onnx" \
+        --p808_model "${dnsmos_model_dir}/DNSMOS/model_v8.onnx" \
+        --nsplits 1 \
+        --job 1
+else
+    echo "DNSMOS json file already exists. Delete ${DNSMOS_JSON_FILE} if you want to re-estimate."
+fi
 
 # remove low-quality samples
-python utils/filter_via_dnsmos.py \
-    --scp_path "tmp/dns5_clean_read_speech_resampled.scp" \
-    --json_path "tmp/dns5_clean_read_speech_resampled_dnsmos.json" \
-    --outfile "tmp/dns5_clean_read_speech_resampled_filtered.scp" \
-    --score_name BAK --threshold 3.0
+FILTERED_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered.scp"
+if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    python utils/filter_via_dnsmos.py \
+        --scp_path ${RESAMP_SCP_FILE}"tmp/dns5_clean_read_speech_resampled.scp" \
+        --json_path ${DNSMOS_JSON_FILE}"tmp/dns5_clean_read_speech_resampled_dnsmos.json" \
+        --outfile ${FILTERED_SCP_FILE} \
+        --score_name BAK --threshold 3.0
+else
+    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
+fi
 
 # remove non-speech samples
-OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
-    --scp_path "tmp/dns5_clean_read_speech_resampled_filtered.scp" \
-    --outfile "tmp/dns5_clean_read_speech_resampled_filtered_vad.scp" \
-    --vad_mode 2 \
-    --threshold 0.2 \
-    --nj 8 \
-    --chunksize 200
+VAD_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered_vad.scp"
+if [ ! -f ${VAD_SCP_FILE} ]; then
+    OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
+        --scp_path ${FILTERED_SCP_FILE} \
+        --outfile ${VAD_SCP_FILE} \
+        --vad_mode 2 \
+        --threshold 0.2 \
+        --nj 8 \
+        --chunksize 200
+else
+    echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
+fi
 
 sort -u tmp/dns5_clean_read_speech_resampled_filtered_vad.scp | \
     awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" dns5_"spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
