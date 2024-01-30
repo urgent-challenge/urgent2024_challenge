@@ -1,28 +1,39 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from math import inf
 from pathlib import Path
 
 
-def get_subset_split(segments, data, min_duration=4.0, silence_thres=1.0):
-    dic = []
+def get_subset_split(segments, data, min_duration=3.0, silence_thres=2.0):
+    dic = {}
+    orig_dur, final_dur = 0.0, 0.0
     for group in group_by_sample(segments):
         video_id = group[0]
         if video_id in data:
-            segment_one_sample(
+            dur_before, dur_after = segment_one_sample(
                 dic,
                 video_id,
-                group[1:],
+                merge_overlapped_segments(group[1:]),
                 data[video_id],
                 min_duration=min_duration,
                 silence_thres=silence_thres,
             )
+            orig_dur += dur_before
+            final_dur += dur_after
+        else:
+            raise ValueError(f"Could not find '{video_id}' in the scp file")
+    orig_dur = timedelta(seconds=orig_dur)
+    final_dur = timedelta(seconds=final_dur)
+    print(f"Total duration: {orig_dur} -> {final_dur}")
     return dic
 
 
 def group_by_sample(segments):
-    """Group all segments by their sample ID (video_id)."""
+    """Group all segments by their sample ID (video_id).
+
+    This function assumes that `segments` is sorted by video_id.
+    """
     ret = []
     prev = None
     for segment in segments:
@@ -38,6 +49,19 @@ def group_by_sample(segments):
     return ret
 
 
+def merge_overlapped_segments(segments):
+    """Merged overlapped segments into one."""
+    ret = []
+    for start, end in sorted(segments, key=lambda x: x[0]):
+        if len(ret) == 0:
+            ret.append((start, end))
+        if ret[-1][0] <= start <= ret[-1][1]:
+            ret[-1] = (ret[-1][0], max(ret[-1][1], end))
+        else:
+            ret.append((start, end))
+    return ret
+
+
 def segment_one_sample(
     dic,
     uid,
@@ -49,6 +73,7 @@ def segment_one_sample(
     segment_duration_thres=inf,
 ):
     i = 1
+    dur_after = 0.0
     st, prev_et = None, None
     segments = []
     for seg_info in group:
@@ -62,13 +87,15 @@ def segment_one_sample(
             # too long for a single segment or too long silence
             if segments and prev_et - st >= min_duration:
                 dic[f"{uid}({i})"] = prepare_segment(audio_path, st, prev_et, segments)
+                dur_after += (dic[f"{uid}({i})"]["end"] - dic[f"{uid}({i})"]["start"])
                 i += 1
-            st, prev_et = None, None
-            segments = []
+            st, prev_et = start, end
+            segments = [seg_info]
         elif end > prev_et and end - st > max_duration:
             # current sample gets too long if this segment is added
             if segments and prev_et - st >= min_duration:
                 dic[f"{uid}({i})"] = prepare_segment(audio_path, st, prev_et, segments)
+                dur_after += (dic[f"{uid}({i})"]["end"] - dic[f"{uid}({i})"]["start"])
                 i += 1
             st, prev_et = start, end
             segments = [seg_info]
@@ -81,7 +108,11 @@ def segment_one_sample(
         dic[f"{uid}({i})"] = prepare_segment(
             audio_path, segments[0][0], segments[-1][1], segments
         )
+        dur_after += (dic[f"{uid}({i})"]["end"] - dic[f"{uid}({i})"]["start"])
         i += 1
+
+    dur_before = group[-1][1] - group[0][0]
+    return dur_before, dur_after
 
 
 def prepare_segment(audio_path, start, end, segments):
@@ -152,12 +183,6 @@ if __name__ == "__main__":
                 )
             )
     print(f"Filtered {count} segments that may contain human speech")
-    # sorted in ASCII order
-    segments2 = sorted(
-        segments,
-        key=lambda s: [n if i == 0 else int(n) for i, n in enumerate(s.split("_"))],
-    )
-    assert segments2 == segments
 
     data = {}
     with open(args.scp_path, "r") as f:
@@ -165,7 +190,7 @@ if __name__ == "__main__":
             uid, audio_path = line.strip().split(maxsplit=1)
             data[uid] = audio_path
 
-    ret = get_subset_split(segments2, data)
+    ret = get_subset_split(segments, data)
     print(f"New split: {len(ret)} segmented samples")
 
     outdir = Path(args.outfile).parent

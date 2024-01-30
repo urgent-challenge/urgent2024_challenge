@@ -10,15 +10,23 @@ from tqdm.contrib.concurrent import process_map
 
 def estimate_bandwidth(audios, threshold=-50.0, nfft=512, hop=256, sample_rate=16000):
     uid, audio_path = audios
+    if isinstance(audio_path, dict):
+        st = int(audio_path["start"] * sample_rate)
+        et = int(audio_path["end"] * sample_rate)
+        idx = slice(st, et)
+        audio_path = audio_path["audio_path"]
+    else:
+        idx = slice(None)
+
     try:
         audio, fs = sf.read(audio_path)
     except:
         print(f"Error: cannot open audio file '{audio_path}'. Skipping it", flush=True)
         return
     if audio.ndim > 1:
-        audio = audio.T
+        audio = audio[idx].T
     else:
-        audio = audio[None, :]
+        audio = audio[None, idx]
     spec = torch.stft(
         torch.from_numpy(audio),
         n_fft=int(nfft / sample_rate * fs),
@@ -85,6 +93,11 @@ if __name__ == "__main__":
                 for line in f:
                     uid, path = line.strip().split(maxsplit=1)
                     audios.append((uid, path))
+        elif Path(audio_dir).is_file() and Path(audio_dir).suffix == ".json":
+            audios = []
+            with open(audio_dir, "r") as f:
+                for uid, dic in json.load(f).items():
+                    audios.append((uid, dic))
         else:
             raise ValueError(f"Invalid format: {audio_dir}")
         all_audios.extend(audios)

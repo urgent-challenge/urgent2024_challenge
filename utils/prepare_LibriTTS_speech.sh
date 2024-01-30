@@ -55,6 +55,18 @@ OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
    --nj 8 \
    --chunksize 1000
 
+python utils/get_libritts_transcript.py \
+    --audio_scp libritts_resampled_train.scp \
+    --audio_dir "${output_dir}/LibriTTS/train-clean-100/" "${output_dir}/LibriTTS/train-clean-360/" \
+    --outfile libritts_resampled_train.text \
+    --nj 8
+
+python utils/get_libritts_transcript.py \
+    --audio_scp libritts_resampled_validation.scp \
+    --audio_dir "${output_dir}/LibriTTS/dev-clean/" \
+    --outfile libritts_resampled_validation.text \
+    --nj 8
+
 awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_train.scp > libritts_resampled_train.utt2spk
 awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_validation.scp > libritts_resampled_validation.utt2spk
 
@@ -65,7 +77,11 @@ awk '{split($1, arr, "_"); print($1" libritts_"arr[1])}' libritts_resampled_vali
 #    - scp file containing resampled samples for training
 # libritts_resampled_train.utt2spk
 #    - speaker mapping for filtered training samples
+# libritts_resampled_train.text
+#    - transcripts for filtered training samples
 # libritts_resampled_validation.scp
 #    - scp file containing resampled samples for validation
 # libritts_resampled_validation.utt2spk
 #    - speaker mapping for filtered validation samples
+# libritts_resampled_validation.text
+#    - transcripts for filtered validation samples

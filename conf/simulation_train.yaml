@@ -10,6 +10,12 @@ speech_utt2spk:
 - vctk_train.utt2spk
 - commonvoice_11.0_en_resampled_filtered_train.utt2spk
 
+speech_utt2spk:
+- dns5_clean_read_speech_resampled_filtered_train.text
+- libritts_resampled_train.text
+- vctk_train.text
+- commonvoice_11.0_en_resampled_filtered_train.text
+
 log_dir: simulation_train/log
 output_dir: simulation_train
 repeat_per_utt: 1

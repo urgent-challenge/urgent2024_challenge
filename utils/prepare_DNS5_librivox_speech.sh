@@ -107,6 +107,9 @@ utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_train.
 utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_validation.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_validation.scp
 utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_train.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_train.scp
 
+awk '{print($1" <not-available>")}' dns5_clean_read_speech_resampled_filtered_train.scp > dns5_clean_read_speech_resampled_filtered_train.text
+awk '{print($1" <not-available>")}' dns5_clean_read_speech_resampled_filtered_validation.scp > dns5_clean_read_speech_resampled_filtered_validation.text
+
 #--------------------------------
 # Output file:
 # -------------------------------
@@ -114,7 +117,11 @@ utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_train.utt2spk tmp/
 #    - scp file containing filtered samples (after resampling) for training
 # dns5_clean_read_speech_resampled_filtered_train.utt2spk
 #    - speaker mapping for filtered training samples
+# dns5_clean_read_speech_resampled_filtered_train.text
+#    - transcript for filtered training samples
 # dns5_clean_read_speech_resampled_filtered_validation.scp
 #    - scp file containing filtered samples (after resampling) for validation
 # dns5_clean_read_speech_resampled_filtered_validation.utt2spk
 #    - speaker mapping for filtered validation samples
+# dns5_clean_read_speech_resampled_filtered_validation.text
+#    - transcript for filtered validation samples

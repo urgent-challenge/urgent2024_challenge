@@ -38,6 +38,9 @@ def levenshtein_metric(model, textcleaner, ref_txt, inf, fs=16000):
     Returns:
         ret (dict): ditionary containing occurrences of edit operations
     """
+    if ref_txt == "<not-available>":
+        # Skip samples without reference transcripts
+        return {}
     if fs != TARGET_FS:
         inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
         fs = TARGET_FS

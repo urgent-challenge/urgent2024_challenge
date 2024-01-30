@@ -102,6 +102,14 @@ def main(args):
                 assert uid not in utt2spk, (uid, sid)
                 utt2spk[uid] = sid
 
+    text = {}
+    for scp in args.speech_text:
+        with open(scp, "r") as f:
+            for line in f:
+                uid, txt = line.strip().split(maxsplit=1)
+                assert uid not in text, (uid, txt)
+                text[uid] = txt
+
     noise_dic = defaultdict(dict)
     for scp in args.noise_scps:
         with open(scp, "r") as f:
@@ -126,7 +134,7 @@ def main(args):
     headers = ["id", "noisy_path", "speech_uid", "speech_sid", "clean_path", "noise_uid"]
     if args.store_noise:
         headers.append("noise_path")
-    headers += ["snr_dB", "rir_uid", "augmentation", "fs", "length"]
+    headers += ["snr_dB", "rir_uid", "augmentation", "fs", "length", "text"]
     f.write("\t".join(headers) + "\n")
 
     outdir = Path(args.output_dir)
@@ -135,6 +143,7 @@ def main(args):
     for fs in sorted(speech_dic.keys(), reverse=True):
         for uid, audio_path in tqdm(speech_dic[fs].items()):
             sid = utt2spk[uid]
+            transcript = text.get(uid, "<not-available>")
             # Load speech sample (Channel, Time)
             with sf.SoundFile(audio_path) as af:
                 speech_length = af.frames
@@ -182,6 +191,7 @@ def main(args):
                     info["augmentation"],
                     str(info["fs"]),
                     str(info["length"]),
+                    transcript,
                 ]
                 f.write("\t".join(lst) + "\n")
     f.close()
@@ -308,6 +318,12 @@ def get_parser(parser=None):
         help="Path to the utt2spk file containing speaker mappings",
     )
     group.add_argument(
+        "--speech_text",
+        type=str,
+        nargs="+",
+        help="Path to the text file containing transcripts",
+    )
+    group.add_argument(
         "--log_dir",
         type=str,
         help="Log directory for storing log and scp files",
@@ -419,6 +435,8 @@ if __name__ == "__main__":
     print(args)
 
     assert len(args.speech_utt2spk) == len(args.speech_scps)
+    if args.speech_text:
+        assert len(args.speech_text) == len(args.speech_scps)
     if args.prob_reverberation > 0:
         assert args.rir_scps
     for w in args.weight_augmentations:

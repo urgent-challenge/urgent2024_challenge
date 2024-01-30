@@ -38,6 +38,18 @@ done | awk -F '/' '{print($NF" 48000 "$0)}' | sed -e 's/\.flac / /g' | sort -u >
 awk '{split($1, arr, "_"); print($1" vctk_"arr[1])}' vctk_train.scp > vctk_train.utt2spk
 awk '{split($1, arr, "_"); print($1" vctk_"arr[1])}' vctk_validation.scp > vctk_validation.utt2spk
 
+python utils/get_vctk_transcript.py \
+    --audio_scp vctk_train.scp \
+    --vctk_dir "${output_dir}/VCTK-Corpus" \
+    --outfile vctk_train.text \
+    --nj 8
+
+python utils/get_vctk_transcript.py \
+    --audio_scp vctk_validation.scp \
+    --vctk_dir "${output_dir}/VCTK-Corpus" \
+    --outfile vctk_validation.text \
+    --nj 8
+
 #--------------------------------
 # Output file:
 # -------------------------------
@@ -45,7 +57,11 @@ awk '{split($1, arr, "_"); print($1" vctk_"arr[1])}' vctk_validation.scp > vctk_
 #    - scp file containing samples for training
 # vctk_train.utt2spk
 #    - speaker mapping for filtered training samples
+# vctk_train.text
+#    - transcript for filtered training samples
 # vctk_validation.scp
 #    - scp file containing samples for validation
 # vctk_validation.utt2spk
 #    - speaker mapping for filtered validation samples
+# vctk_validation.text
+#    - transcript for filtered validation samples

@@ -120,6 +120,16 @@ awk 'FNR==NR {arr[$2]=$1; next} {print($1" cv11_"arr[$1".mp3"])}' \
     commonvoice_11.0_en_resampled_filtered_validation.scp \
     > commonvoice_11.0_en_resampled_filtered_validation.utt2spk
 
+python get_commonvoice_transcript.py \
+    --audio_scp commonvoice_11.0_en_resampled_filtered_train.scp \
+    --tsv_path "${corpus_dir}/train.tsv" \
+    --outfile commonvoice_11.0_en_resampled_filtered_train.text
+
+python get_commonvoice_transcript.py \
+    --audio_scp commonvoice_11.0_en_resampled_filtered_validation.scp \
+    --tsv_path "${corpus_dir}/dev.tsv" \
+    --outfile commonvoice_11.0_en_resampled_filtered_validation.text
+
 #--------------------------------
 # Output file:
 # -------------------------------
@@ -127,7 +137,11 @@ awk 'FNR==NR {arr[$2]=$1; next} {print($1" cv11_"arr[$1".mp3"])}' \
 #    - scp file containing filtered samples (after resampling) for training
 # commonvoice_11.0_en_resampled_filtered_train.utt2spk
 #    - speaker mapping for filtered training samples
+# commonvoice_11.0_en_resampled_filtered_train.text
+#    - transcript for filtered training samples
 # commonvoice_11.0_en_resampled_filtered_validation.scp
 #    - scp file containing filtered samples (after resampling) for validation
 # commonvoice_11.0_en_resampled_filtered_validation.utt2spk
 #    - speaker mapping for filtered validation samples
+# commonvoice_11.0_en_resampled_filtered_validation.text
+#    - transcript for filtered validation samples

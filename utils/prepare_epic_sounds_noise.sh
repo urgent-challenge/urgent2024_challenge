@@ -26,6 +26,7 @@ if ! command -v ffmpeg; then
     exit 1
 fi
 find "${output_dir}/EPIC-KITCHENS-100/" -iname '*.mp4' | while read -r fname; do
+    # It takes ~9 hours to finish audio extraction
     fbasename=$(basename "${fname}" | sed -e 's/\.mp4$//i')
     fdir=$(realpath --relative-to="${output_dir}/EPIC-KITCHENS-100/" $(dirname "${fname}"))
     out="${output_dir}/audios/${fdir}/${fbasename}.wav"
@@ -48,22 +49,22 @@ find "${output_dir}"/audios/ -iname '*.wav' | \
 python utils/get_epic_sounds_subset_split.py \
     --scp_path tmp/epic_sounds_noise.scp \
     --csv_path "${output_dir}/epic-sounds-annotations/EPIC_Sounds_train.csv" \
-    --outfile tmp/epic_sounds_noise_train.json
+    --outfile tmp/epic_sounds_noise_train_seg.json
 
 python utils/get_epic_sounds_subset_split.py \
     --scp_path tmp/epic_sounds_noise.scp \
     --csv_path "${output_dir}/epic-sounds-annotations/EPIC_Sounds_validation.csv" \
-    --outfile tmp/epic_sounds_noise_validation.json
+    --outfile tmp/epic_sounds_noise_validation_seg.json
 
 python utils/estimate_audio_bandwidth.py \
-    --audio_dir "tmp/epic_sounds_noise_train.json" \
+    --audio_dir "tmp/epic_sounds_noise_train_seg.json" \
     --audio_format wav \
     --chunksize 1000 \
     --nj 4 \
     --outfile tmp/epic_sounds_noise_train.json
 
 python utils/estimate_audio_bandwidth.py \
-    --audio_dir "tmp/epic_sounds_noise_validation.json" \
+    --audio_dir "tmp/epic_sounds_noise_validation_seg.json" \
     --audio_format wav \
     --chunksize 1000 \
     --nj 4 \
@@ -84,6 +85,8 @@ python utils/resample_to_estimated_bandwidth.py \
    --resample_type "kaiser_best" \
    --nj 4 \
    --chunksize 1000
+
+echo "It is safe to delete the original video data (${output_dir}/EPIC-KITCHENS) now if you want to save disk space"
 
 #--------------------------------
 # Output file:

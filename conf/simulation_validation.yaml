@@ -10,6 +10,12 @@ speech_utt2spk:
 - libritts_resampled_validation.utt2spk
 - vctk_validation.utt2spk
 
+speech_text:
+- dns5_clean_read_speech_resampled_filtered_validation.text
+- commonvoice_11.0_en_resampled_filtered_validation.text
+- libritts_resampled_validation.text
+- vctk_validation.text
+
 log_dir: simulation_validation/log
 output_dir: simulation_validation
 repeat_per_utt: 1
