@@ -4,8 +4,8 @@ Official data preparation scripts for the URGENT 2024 Challenge
 ## Requirements
 
 - `>8` Cores
-- At least `1` GPU (recommended for speedup in DNSMOS calculation)
-- XXX GB of free disk space
+- At least `1` GPU (4 or 8 GPUs are recommended for speedup in DNSMOS or other DNN-based metric calculation)
+- At least 1.4 TB of free disk space
   - Speech
     - DNS5 speech (original 80 GB + resampled 57 GB): 137 GB
     - CommonVoice English speech (original mp3 82 GB + resampled 509 GB): 591 GB
@@ -28,8 +28,8 @@ With minimum specs, expects the whole process to take YYY hours.
 1. Install environmemnt. Python 3.10 and Torch 2.0.1 are recommended.
    With Anaconda, just run
 
-    conda env create -f environment.yaml
-    conda activate urgent
+        conda env create -f environment.yaml
+        conda activate urgent
 
 2. Download Commonvoice dataset v11 from https://commonvoice.mozilla.org/en/datasets
     a. Select `Common Voice Corpus 11.0`
@@ -46,7 +46,7 @@ With minimum specs, expects the whole process to take YYY hours.
 
 3. Run the script
 
-    ./prepare_espnet_data.sh
+        ./prepare_espnet_data.sh
 
 4. Install eSpeak-NG (used for the phoneme similarity metric computation)
    - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
