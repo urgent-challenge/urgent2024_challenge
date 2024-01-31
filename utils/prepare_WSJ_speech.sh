@@ -87,13 +87,13 @@ python get_wsj_transcript.py \
     --nj 8 \
     --outfile tmp/wsj_train_si284.text tmp/wsj_test_dev93.text
 
-cp tmp/wsj_train_si284.scp wsj_train.scp
+awk '{res=substr($0, length($1)+2, length($0)); print($1" 16000 "res)}' tmp/wsj_train_si284.scp > wsj_train.scp
 cp tmp/wsj_train_si284.text wsj_train.text
-awk '{print($1" "substr($1,1,3))}' wsj_train.scp > wsj_train.utt2spk
+awk '{print($1" wsj_"substr($1,1,3))}' wsj_train.scp > wsj_train.utt2spk
 
-cp tmp/wsj_test_dev93.scp wsj_validation.scp
+awk '{res=substr($0, length($1)+2, length($0)); print($1" 16000 "res)}' tmp/wsj_test_dev93.scp > wsj_validation.scp
 cp tmp/wsj_test_dev93.text wsj_validation.text
-awk '{print($1" "substr($1,1,3))}' wsj_validation.scp > wsj_validation.utt2spk
+awk '{print($1" wsj_"substr($1,1,3))}' wsj_validation.scp > wsj_validation.utt2spk
 
 #--------------------------------
 # Output file:
