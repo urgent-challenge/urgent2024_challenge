@@ -50,3 +50,25 @@ With minimum specs, expects the whole process to take YYY hours.
 
 4. Install eSpeak-NG (used for the phoneme similarity metric computation)
    - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
+
+## Optional: Prepare webdataset
+
+The script `./utils/prepare_wds.py` can store the audio files in a collection
+of tar files each containing a predefined number of audio files. This is useful
+to reduce the number of IO operations during training. Please see the
+[documentation](https://github.com/webdataset/webdataset) of `webdataset` for
+more information.
+
+```
+OMP_NUM_THREADS=1 python ./utils/prepare_wds.py \
+    /path/to/urgent_train_24k_wds \
+    --files-per-tar 250 \
+    --max-workers 8 \
+    --scps data/tmp/commonvoice_11.0_en_resampled_filtered_train.scp \
+    data/tmp/dns5_clean_read_speech_resampled_filtered_train.scp \
+    data/tmp/vctk_train.scp \
+    data/tmp/libritts_resampled_train.scp
+```
+The script can also resample the whole dataset to a unified sampling frequency
+with `--sampling-rate <freq_hz>`. This option will not include samples with
+sampling frequency lower than the prescribed frequency.
