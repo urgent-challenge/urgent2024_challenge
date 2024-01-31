@@ -32,9 +32,13 @@ With minimum specs, expects the whole process to take YYY hours.
         conda activate urgent
 
 2. Download Commonvoice dataset v11 from https://commonvoice.mozilla.org/en/datasets
+
     a. Select `Common Voice Corpus 11.0`
+
     b. Enter your email and check the two mandatory boxes
+
     c. Right-click the `Download Dataset Bundle` button and select "Copy link"
+
     d. Enter the following commands in your terminal
 
         URL="<paste-link>"
@@ -44,11 +48,22 @@ With minimum specs, expects the whole process to take YYY hours.
             -o ./datasets_cv11_en \
             --skip_existing --skip_errors 
 
-3. Run the script
+3. Download WSJ0 and WSJ1 datasets from LDC
+    > You will need a LDC license to access the data.
+    >
+    > For URGENT Challenge participants who want to use the data during the challenge period, please contact the organizers for a temporary LDC license.
+
+    a. Download WSJ0 from https://catalog.ldc.upenn.edu/LDC93s6a
+
+    b. Download WSJ1 from https://catalog.ldc.upenn.edu/LDC94S13A
+
+    c. Uncompress and store the downloaded data to the directories `./wsj/wsj0/` and `./wsj/wsj1/`, respectively.
+
+4. Run the script
 
         ./prepare_espnet_data.sh
 
-4. Install eSpeak-NG (used for the phoneme similarity metric computation)
+5. Install eSpeak-NG (used for the phoneme similarity metric computation)
    - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
 
 ## Optional: Prepare webdataset
