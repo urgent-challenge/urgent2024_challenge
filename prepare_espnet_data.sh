@@ -92,18 +92,18 @@ for subset in train; do
     mv vctk_${subset}.* "${output_dir}/tmp/"
 done
 
-# ./utils/prepare_WSJ_speech.sh
-# for subset in train; do
-#    mkdir -p "${output_dir}/tmp/wsj_${subset}"
-#    awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
-#    cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
-#    cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
-#    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
-#    awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
-#    awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
-#    cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
-#    mv wsj_${subset}.* "${output_dir}/tmp/"
-# done
+./utils/prepare_WSJ_speech.sh
+for subset in train; do
+   mkdir -p "${output_dir}/tmp/wsj_${subset}"
+   awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
+   cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
+   cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
+   utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
+   awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
+   awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
+   cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
+   mv wsj_${subset}.* "${output_dir}/tmp/"
+done
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
@@ -112,7 +112,7 @@ utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir
     "${output_dir}"/tmp/libritts_train \
     "${output_dir}"/tmp/vctk_train \
     "${output_dir}"/tmp/commonvoice_11_en_train \
-    #"${output_dir}"/tmp/wsj_train
+    "${output_dir}"/tmp/wsj_train
 
 ################################
 # Noise and RIR data
