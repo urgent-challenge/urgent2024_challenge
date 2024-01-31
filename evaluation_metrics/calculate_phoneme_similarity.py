@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import librosa
 import numpy as np
 import soundfile as sf
+import soxr
 import torch
 from Levenshtein import distance
 from torch.nn import Module
@@ -81,8 +81,8 @@ def phoneme_similarity_metric(model, ref, inf, fs=16000):
         similarity (float): phoneme similarity value between (-inf, 1]
     """
     if fs != TARGET_FS:
-        ref = librosa.resample(ref, orig_sr=fs, target_sr=TARGET_FS)
-        inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
+        ref = soxr.resample(ref, fs, TARGET_FS)
+        inf = soxr.resample(inf, fs, TARGET_FS)
     with torch.no_grad():
         similarity = model(ref, inf)
     return similarity

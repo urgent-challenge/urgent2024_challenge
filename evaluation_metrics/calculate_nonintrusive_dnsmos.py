@@ -1,9 +1,9 @@
 from distutils.util import strtobool
 from pathlib import Path
 
-import librosa
 import numpy as np
 import soundfile as sf
+import soxr
 import torch
 from tqdm import tqdm
 
@@ -32,7 +32,8 @@ def dnsmos_metric(model, audio, fs=16000):
         dnsmos (float): DNSMOS OVRL value between [1, 5]
     """
     if fs != TARGET_FS:
-        audio = librosa.resample(audio, orig_sr=fs, target_sr=TARGET_FS)
+        audio = soxr.resample(audio, fs, TARGET_FS)
+        fs = TARGET_FS
     with torch.no_grad():
         dnsmos_score = model(audio, fs)
     return float(dnsmos_score["OVRL"])

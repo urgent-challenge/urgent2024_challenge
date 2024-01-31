@@ -4,6 +4,7 @@ from pathlib import Path
 import librosa
 import numpy as np
 import soundfile as sf
+import soxr
 from mir_eval.separation import bss_eval_sources
 from pesq import PesqError, pesq
 from pystoi import stoi
@@ -114,8 +115,8 @@ def pesq_metric(ref, inf, fs=8000):
         mode = "wb"
     elif fs > 16000:
         mode = "wb"
-        ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
-        inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+        ref = soxr.resample(ref, fs, 16000)
+        inf = soxr.resample(inf, fs, 16000)
         fs = 16000
     else:
         raise ValueError(
@@ -168,8 +169,8 @@ def visqol_metric(ref, inf, fs=16000):
     Returns:
         visqol (float): VISQOL value between [1, 5]
     """
-    ref = librosa.resample(ref, orig_sr=fs, target_sr=16000)
-    inf = librosa.resample(inf, orig_sr=fs, target_sr=16000)
+    ref = soxr.resample(ref, fs, 16000)
+    inf = soxr.resample(inf, fs, 16000)
     fs = 16000
 
     similarity_result = visqol_api.Measure(ref, inf)

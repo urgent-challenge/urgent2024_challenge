@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import librosa
 import numpy as np
 import soundfile as sf
+import soxr
 import torch
 from tqdm import tqdm
 
@@ -30,8 +30,8 @@ def speaker_similarity_metric(model, ref, inf, fs=16000):
         similarity (float): cosine similarity value between [0, 1]
     """
     if fs != TARGET_FS:
-        ref = librosa.resample(ref, orig_sr=fs, target_sr=TARGET_FS)
-        inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
+        ref = soxr.resample(ref, fs, TARGET_FS)
+        inf = soxr.resample(inf, fs, TARGET_FS)
     with torch.no_grad():
         ref_emb = model(ref)
         inf_emb = model(inf)

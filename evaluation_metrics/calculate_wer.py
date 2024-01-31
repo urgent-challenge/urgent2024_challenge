@@ -2,9 +2,9 @@ from collections import defaultdict
 from pathlib import Path
 
 import json
-import librosa
 import numpy as np
 import soundfile as sf
+import soxr
 import torch
 from Levenshtein import opcodes
 from tqdm import tqdm
@@ -42,7 +42,7 @@ def levenshtein_metric(model, textcleaner, ref_txt, inf, fs=16000):
         # Skip samples without reference transcripts
         return {}
     if fs != TARGET_FS:
-        inf = librosa.resample(inf, orig_sr=fs, target_sr=TARGET_FS)
+        inf = soxr.resample(inf, fs, TARGET_FS)
         fs = TARGET_FS
     with torch.no_grad():
         inf_txt = owsm_predict(
