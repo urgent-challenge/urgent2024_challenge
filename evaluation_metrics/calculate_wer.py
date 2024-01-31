@@ -6,7 +6,7 @@ import librosa
 import numpy as np
 import soundfile as sf
 import torch
-from Levenshtein import editops
+from Levenshtein import opcodes
 from tqdm import tqdm
 
 from owsm_utils import owsm_predict
@@ -66,8 +66,15 @@ def levenshtein_metric(model, textcleaner, ref_txt, inf, fs=16000):
         "replace": 0,
         "equal": 0,
     }
-    for op, _, _ in editops(ref_words, inf_words):
-        ret[op] = ret[op] + 1
+    for op, ref_st, ref_et, inf_st, inf_et in opcodes(ref_words, inf_words):
+        if op == "insert":
+            ret[op] = ret[op] + inf_et - inf_st
+        else:
+            ret[op] = ret[op] + ref_et - ref_st
+    total = ret["delete"] + ret["replace"] + ret["equal"]
+    assert total == len(ref_words), (total, len(ref_words))
+    total = ret["insert"] + ret["replace"] + ret["equal"]
+    assert total == len(inf_words), (total, len(inf_words))
     return ret
 
 
