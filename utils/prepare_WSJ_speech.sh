@@ -23,36 +23,90 @@ if [ ! -d "${output_dir}/wsj1" ]; then
 fi
 
 #################################
+# Download sph2pipe
+#################################
+if ! command -v sph2pipe; then
+    echo "Installing sph2pipe from https://www.ldc.upenn.edu/language-resources/tools/sphere-conversion-tools"
+
+    if [ ! -e sph2pipe_v${SPH2PIPE_VERSION}.tar.gz ]; then
+        wget -nv -T 10 -t 3 -O sph2pipe_v${SPH2PIPE_VERSION}.tar.gz \
+            "https://github.com/burrmill/sph2pipe/archive/refs/tags/${SPH2PIPE_VERSION}.tar.gz"
+    fi
+
+    if [ ! -e sph2pipe-${SPH2PIPE_VERSION} ]; then
+        tar --no-same-owner -xzf sph2pipe_v${SPH2PIPE_VERSION}.tar.gz
+        rm -rf sph2pipe 2>/dev/null || true
+        ln -s sph2pipe-${SPH2PIPE_VERSION} sph2pipe
+    fi
+
+    make -C sph2pipe
+    sph2pipe=$PWD/sph2pipe/sph2pipe
+else
+    sph2pipe=sph2pipe
+fi
+
+#################################
+# Convert sph formats to wav
+#################################
+find "${output_dir}/wsj0/" -iname '*.wv1' | while read -r fname; do
+    # It takes ~23 minutes to finish audio format conversion in "${output_dir}/wsj0_wav"
+    fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
+    fdir=$(realpath --relative-to="${output_dir}/wsj0/" $(dirname "${fname}"))
+    out="${output_dir}/wsj0_wav/${fdir}/${fbasename}.wav"
+    mkdir -p "${output_dir}/wsj0_wav/${fdir}"
+    "${sph2pipe}" -f wav "${fname}" > "${out}"
+done
+
+find "${output_dir}/wsj1/" -iname '*.wv1' | while read -r fname; do
+    # It takes ~1 hour to finish audio format conversion in "${output_dir}/wsj1_wav"
+    fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
+    fdir=$(realpath --relative-to="${output_dir}/wsj1/" $(dirname "${fname}"))
+    out="${output_dir}/wsj1_wav/${fdir}/${fbasename}.wav"
+    mkdir -p "${output_dir}/wsj1_wav/${fdir}"
+    "${sph2pipe}" -f wav "${fname}" > "${out}"
+done
+
+
+#################################
 # Data preprocessing
 #################################
 mkdir -p tmp
-python utils/estimate_audio_bandwidth.py \
-    --audio_dir "${output_dir}/wsj0/" "${output_dir}/wsj1/" \
-    --audio_format wav \
-    --chunksize 1000 \
-    --nj 4 \
-    --outfile tmp/wsj_train.json
 
-python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/wsj_train.json \
-   --out_scpfile wsj_resampled_train.scp \
-   --outdir "${output_dir}/resampled/train" \
-   --resample_type "kaiser_best" \
-   --nj 4 \
-   --chunksize 1000
+sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' -e 's#:wsj0/# wsj0/#g' "${output_dir}/wsj1/13-34.1/wsj1/doc/indices/si_tr_s.ndx" "${output_dir}/wsj0/11-13.1/wsj0/doc/indices/train/tr_s_wv1.ndx" | \
+    awk -v out="${output_dir}" '{if(substr($1,1,1)!=";"){n=split($2,a,"/"); split(a[n],b,"."); split($1,c,"_"); str=c[1]"-"c[2]"."c[3]; if(substr($2,length($2)-3,4)!=".wv1"){$2=$2".wav";} print(b[1]" "out"/"a[1]"_wav/"str"/"$2)}}' | \
+    sed -e 's#\.wv1$#.wav#g' | grep -v -i 11-2.1/wsj0/si_tr_s/401 | sort -u > tmp/wsj_train_si284.scp
+
+sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' "${output_dir}/wsj1/13-34.1/wsj1/doc/indices/h1_p0.ndx" | \
+    awk -v out="${output_dir}" '{if(substr($1,1,1)!=";"){n=split($2,a,"/"); split(a[n],b,"."); split($1,c,"_"); str=c[1]"-"c[2]"."c[3]; if(substr($2,length($2)-3,4)!=".wv1"){$2=$2".wav";} print(b[1]" "out"/"a[1]"_wav/"str"/"$2)}}' | \
+    sed -e 's#\.wv1$#.wav#g' | sort -u > tmp/wsj_test_dev93.scp
+
+python get_wsj_transcript.py \
+    --audio_scp tmp/wsj_train_si284.scp tmp/wsj_test_dev93.scp \
+    --audio_dir "${output_dir}/wsj0/" "${output_dir}/wsj1/" \
+    --chunksize 1000 \
+    --nj 8 \
+    --outfile tmp/wsj_train_si284.text tmp/wsj_test_dev93.text
+
+cp tmp/wsj_train_si284.scp wsj_train.scp
+cp tmp/wsj_train_si284.text wsj_train.text
+awk '{print($1" "substr($1,1,3))}' wsj_train.scp > wsj_train.utt2spk
+
+cp tmp/wsj_test_dev93.scp wsj_validation.scp
+cp tmp/wsj_test_dev93.text wsj_validation.text
+awk '{print($1" "substr($1,1,3))}' wsj_validation.scp > wsj_validation.utt2spk
 
 #--------------------------------
 # Output file:
 # -------------------------------
-# wsj_resampled_train.scp
-#    - scp file containing resampled samples for training
-# wsj_resampled_train.utt2spk
-#    - speaker mapping for resampled training samples
-# wsj_resampled_train.text
-#    - transcript for resampled training samples
-# wsj_resampled_validation.scp
-#    - scp file containing resampled samples for validation
-# wsj_resampled_validation.utt2spk
-#    - speaker mapping for resampled validation samples
-# wsj_resampled_validation.text
-#    - transcript for resampled validation samples
+# wsj_train.scp
+#    - scp file containing samples for training
+# wsj_train.utt2spk
+#    - speaker mapping for training samples
+# wsj_train.text
+#    - transcript for training samples
+# wsj_validation.scp
+#    - scp file containing samples for validation
+# wsj_validation.utt2spk
+#    - speaker mapping for validation samples
+# wsj_validation.text
+#    - transcript for validation samples

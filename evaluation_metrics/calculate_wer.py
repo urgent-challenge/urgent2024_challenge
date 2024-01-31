@@ -58,7 +58,14 @@ def levenshtein_metric(model, textcleaner, ref_txt, inf, fs=16000):
     inf_txt = textcleaner(inf_txt)
     ref_words = ref_txt.split()
     inf_words = inf_txt.split()
-    ret = {"delete": 0, "insert": 0, "replace": 0, "equal": 0}
+    ret = {
+        "hyp_text": inf_txt,
+        "ref_text": ref_txt,
+        "delete": 0,
+        "insert": 0,
+        "replace": 0,
+        "equal": 0,
+    }
     for op, _, _ in editops(ref_words, inf_words):
         ret[op] = ret[op] + 1
     return ret
@@ -110,9 +117,9 @@ def main(args):
     )
     textcleaner = TextCleaner("whisper_en")
     ret = []
-    for uid, ref_audio, inf_audio in tqdm(data_pairs):
+    for uid, ref_text, inf_audio in tqdm(data_pairs):
         _, score = process_one_pair(
-            (uid, ref_audio, inf_audio), model=model, textcleaner=textcleaner
+            (uid, ref_text, inf_audio), model=model, textcleaner=textcleaner
         )
         ret.append((uid, score))
         for metric, value in score.items():

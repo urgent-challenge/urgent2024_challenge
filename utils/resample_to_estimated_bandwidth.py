@@ -12,8 +12,10 @@ from tqdm.contrib.concurrent import process_map
 sampling_rates = (8000, 16000, 22050, 24000, 32000, 44100, 48000)
 
 
-def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits, outdir):
-    audio_path, est_bandwidth = path_bw
+def resample_to_estimated_bandwidth(
+    uid_path_bw, idx, max_files_per_dir, num_digits, outdir
+):
+    uid, audio_path, est_bandwidth = uid_path_bw
     try:
         audio, fs = sf.read(audio_path)
     except:
@@ -30,7 +32,7 @@ def resample_to_estimated_bandwidth(path_bw, idx, max_files_per_dir, num_digits,
     audio = soxr.resample(audio, fs, est_fs)
 
     subdir = f"{idx // max_files_per_dir:0{num_digits}x}"
-    outfile = Path(outdir) / subdir / (Path(audio_path).stem + ".wav")
+    outfile = Path(outdir) / subdir / (uid + ".wav")
     outfile.parent.mkdir(parents=True, exist_ok=True)
     sf.write(str(outfile), audio, est_fs)
     return outfile, est_fs
@@ -72,14 +74,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if Path(args.bandwidth_data).suffix == ".json":
+        audios = []
         with open(args.bandwidth_data, "r") as f:
-            audios = list(json.load(f).values())
+            for uid, (path, bandwidth) in json.load(f).items():
+                audios.append((uid, path, bandwidth))
     elif Path(args.audio_dir).suffix == ".scp":
         audios = []
         with open(args.audio_dir, "r") as f:
             for line in f:
                 uid, bandwidth, path = line.strip().split(maxsplit=1)
-                audios.append((path, bandwidth))
+                audios.append((uid, path, bandwidth))
 
     indices = list(range(len(audios)))
     num_digits = math.ceil(math.log(len(indices) / args.max_files, 16))

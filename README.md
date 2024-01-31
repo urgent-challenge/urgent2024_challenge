@@ -11,11 +11,11 @@ Official data preparation scripts for the URGENT 2024 Challenge
     - CommonVoice English speech (original mp3 82 GB + resampled 509 GB): 591 GB
     - LibriTTS (original 44 GB + resampled 7 GB): 51 GB
     - VCTK: 12 GB
-    - WSJ (original sph 15GB + converted GB):  GB
+    - WSJ (original sph 15GB + converted 31 GB): 46 GB
   - Noise
     - DNS5 noise (original 58 GB + resampled 35 GB): 93 GB
     - WHAM! noise (48 kHz): 76 GB
-    - EPIC-Sounds noise (original + resampled): GB
+    - [optional] EPIC-Sounds noise (original video 1.3 TB + original audio 33 GB + resampled 370 GB): 1.7 TB
   - RIR
     - DNS5 RIRs (48 kHz): 6 GB
   - Others
