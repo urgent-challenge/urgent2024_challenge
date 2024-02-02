@@ -25,11 +25,18 @@ With minimum specs, expects the whole process to take YYY hours.
 
 ## Instructions
 
+0. After cloning this repository, run the following command to initialize the submodules:
+    ```bash
+    git submodule update --init --recursive
+    ```
+
 1. Install environmemnt. Python 3.10 and Torch 2.0.1 are recommended.
    With Anaconda, just run
 
-        conda env create -f environment.yaml
-        conda activate urgent
+    ```bash
+    conda env create -f environment.yaml
+    conda activate urgent
+    ```
 
 2. Download Commonvoice dataset v11 from https://commonvoice.mozilla.org/en/datasets
 
@@ -41,12 +48,14 @@ With minimum specs, expects the whole process to take YYY hours.
 
     d. Enter the following commands in your terminal
 
-        URL="<paste-link>"
-        wget $URL -O ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz
-        python ./utils/tar_extractor.py -m 5000 \
-            -i ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz \
-            -o ./datasets_cv11_en \
-            --skip_existing --skip_errors 
+    ```bash
+    URL="<paste-link>"
+    wget $URL -O ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz
+    python ./utils/tar_extractor.py -m 5000 \
+        -i ./datasets_cv11_en/cv-corpus-11.0-2022-09-21-en.tar.gz \
+        -o ./datasets_cv11_en \
+        --skip_existing --skip_errors
+    ``` 
 
 3. Download WSJ0 and WSJ1 datasets from LDC
     > You will need a LDC license to access the data.
@@ -61,7 +70,9 @@ With minimum specs, expects the whole process to take YYY hours.
 
 4. Run the script
 
-        ./prepare_espnet_data.sh
+    ```bash
+    ./prepare_espnet_data.sh
+    ```
 
 5. Install eSpeak-NG (used for the phoneme similarity metric computation)
    - Follow the instructions in https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#linux
@@ -74,7 +85,7 @@ to reduce the number of IO operations during training. Please see the
 [documentation](https://github.com/webdataset/webdataset) of `webdataset` for
 more information.
 
-```
+```bash
 OMP_NUM_THREADS=1 python ./utils/prepare_wds.py \
     /path/to/urgent_train_24k_wds \
     --files-per-tar 250 \
