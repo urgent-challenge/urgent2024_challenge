@@ -28,3 +28,7 @@ phonemizer
 
 # for text normalization in the WER metric
 openai-whisper
+
+for SpeechBERTScore metric
+git+https://github.com/Takaaki-Saeki/DiscreteSpeechMetrics.git
+
