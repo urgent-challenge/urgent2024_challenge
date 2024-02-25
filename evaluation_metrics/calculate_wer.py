@@ -1,4 +1,3 @@
-from collections import defaultdict
 from pathlib import Path
 
 import json
@@ -83,14 +82,21 @@ def levenshtein_metric(model, textcleaner, ref_txt, inf, fs=16000):
 ################################################################
 def main(args):
     transcripts = {}
-    with open(args.meta_tsv, "r") as f:
-        headers = next(f).strip().split("\t")
-        uid_idx = headers.index("id")
-        txt_idx = headers.index("text")
-        for line in f:
-            tup = line.strip().split("\t")
-            uid, txt = tup[uid_idx], tup[txt_idx]
-            transcripts[uid] = txt
+    if args.meta_tsv.endswith(".tsv"):
+        with open(args.meta_tsv, "r") as f:
+            headers = next(f).strip().split("\t")
+            uid_idx = headers.index("id")
+            txt_idx = headers.index("text")
+            for line in f:
+                tup = line.strip().split("\t")
+                uid, txt = tup[uid_idx], tup[txt_idx]
+                transcripts[uid] = txt
+    else:
+        print(f"Assuming '{args.meta_tsv}' as scp file")
+        with open(args.meta_tsv, "r") as f:
+            for line in f:
+                uid, txt = line.strip().split(maxsplit=1)
+                transcripts[uid] = txt
 
     data_pairs = []
     with open(args.inf_scp, "r") as f:
@@ -141,10 +147,10 @@ def main(args):
         with (outdir / "RESULTS.txt").open("w") as f:
             for metric in METRICS:
                 if metric == "WER":
-                    dic = defaultdict(list)
+                    dic = {"delete": [], "insert": [], "replace": [], "equal": []}
                     for uid, score in ret:
-                        for op, count in score[metric].items():
-                            dic[op].append(count)
+                        for op in dic.keys():
+                            dic[op].append(score[metric][op])
                     dic = {op: sum(count) for op, count in dic.items()}
                     numerator = dic["replace"] + dic["delete"] + dic["insert"]
                     denominator = dic["replace"] + dic["delete"] + dic["equal"]
@@ -184,7 +190,8 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="Path to the tsv file containing meta information about the data "
-        "(including transcripts)",
+        "(including transcripts)\n"
+        "Alternatively, this can also be a scp file containing transcript per sample",
     )
     parser.add_argument(
         "--inf_scp",
