@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
     outdir = Path(args.outfile).parent
     outdir.mkdir(parents=True, exist_ok=True)
-    with open(outdir / "bandwidth.pkl", "wb") as f:
-        pickle.dump(ret0, f)
+    #with open(outdir / "bandwidth.pkl", "wb") as f:
+    #    pickle.dump(ret0, f)
     ret = {uid_val[0]: uid_val[1] for uid_val in ret0 if uid_val is not None}
     if args.outfile.endswith(".json"):
         with open(args.outfile, "w") as f:

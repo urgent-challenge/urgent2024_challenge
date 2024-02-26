@@ -75,8 +75,8 @@ fi
 FILTERED_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered.scp"
 if [ ! -f ${FILTERED_SCP_FILE} ]; then
     python utils/filter_via_dnsmos.py \
-        --scp_path ${RESAMP_SCP_FILE}"tmp/dns5_clean_read_speech_resampled.scp" \
-        --json_path ${DNSMOS_JSON_FILE}"tmp/dns5_clean_read_speech_resampled_dnsmos.json" \
+        --scp_path "${RESAMP_SCP_FILE}" \
+        --json_path "${DNSMOS_JSON_FILE}" \
         --outfile ${FILTERED_SCP_FILE} \
         --score_name BAK --threshold 3.0
 else
