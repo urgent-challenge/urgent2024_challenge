@@ -49,7 +49,7 @@ if [ ! -f ${RESAMP_SCP_FILE} ]; then
        --chunksize 1000
 else
     echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
-if
+fi
 
 #################################
 # Data filtering based on DNSMOS
@@ -120,14 +120,14 @@ awk 'FNR==NR {arr[$2]=$1; next} {print($1" cv11_"arr[$1".mp3"])}' \
     commonvoice_11.0_en_resampled_filtered_validation.scp \
     > commonvoice_11.0_en_resampled_filtered_validation.utt2spk
 
-python get_commonvoice_transcript.py \
+python utils/get_commonvoice_transcript.py \
     --audio_scp commonvoice_11.0_en_resampled_filtered_train.scp \
-    --tsv_path "${corpus_dir}/train.tsv" \
+    --tsv_path "${output_dir}/train.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_train.text
 
-python get_commonvoice_transcript.py \
+python utils/get_commonvoice_transcript.py \
     --audio_scp commonvoice_11.0_en_resampled_filtered_validation.scp \
-    --tsv_path "${corpus_dir}/dev.tsv" \
+    --tsv_path "${output_dir}/dev.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_validation.text
 
 #--------------------------------

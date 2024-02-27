@@ -82,11 +82,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    outdir = Path(args.outfile).parent
+    outdir.mkdir(parents=True, exist_ok=True)
+
     all_audios = []
     for audio_dir in args.audio_dir:
         if Path(audio_dir).is_dir():
             audios = list(Path(audio_dir).rglob("*." + args.audio_format))
-            audios = list(zip(list(range(len(audios))), audios))
+            audios = list(zip([p.stem for p in audios], audios))
         elif Path(audio_dir).is_file() and Path(audio_dir).suffix == ".scp":
             audios = []
             with open(audio_dir, "r") as f:
@@ -101,18 +104,32 @@ if __name__ == "__main__":
         else:
             raise ValueError(f"Invalid format: {audio_dir}")
         all_audios.extend(audios)
-    ret0 = process_map(
-        partial(estimate_bandwidth, threshold=args.threshold),
-        audios,
-        chunksize=args.chunksize,
-        max_workers=args.nj,
-    )
+    pkl_file = Path(args.outfile).with_suffix(".pkl")
+    if pkl_file.exists():
+        print(f"Loading existing pkl file: {pkl_file}")
+        with pkl_file.open("r") as f:
+            ret0 = pickle.load(f)
+    else:
+        ret0 = process_map(
+            partial(estimate_bandwidth, threshold=args.threshold),
+            audios,
+            chunksize=args.chunksize,
+            max_workers=args.nj,
+        )
+        with pkl_file.open("wb") as f:
+            pickle.dump(ret0, f)
 
-    outdir = Path(args.outfile).parent
-    outdir.mkdir(parents=True, exist_ok=True)
-    #with open(outdir / "bandwidth.pkl", "wb") as f:
-    #    pickle.dump(ret0, f)
-    ret = {uid_val[0]: uid_val[1] for uid_val in ret0 if uid_val is not None}
+    ret = {}
+    for uid_val in ret0:
+        if uid_val is None:
+            continue
+        uid, val = uid_val
+        i = 1; uid2 = uid
+        while uid2 in ret:
+            i += 1
+            uid2 = f"{uid}({i})"
+        ret[uid2] = val
+
     if args.outfile.endswith(".json"):
         with open(args.outfile, "w") as f:
             json.dump(ret, f, indent=2)

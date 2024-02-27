@@ -58,6 +58,7 @@ if [ -f ${DNSMOS_GZ_FILE} ]; then
     gunzip -c ${DNSMOS_GZ_FILE} > ${DNSMOS_JSON_FILE}
 fi
 if [ ! -f ${DNSMOS_JSON_FILE} ]; then
+    # It took around 35 hours with a single RTX 2080 Ti GPU
     python utils/get_dnsmos.py \
         --json_path ${RESAMP_SCP_FILE} \
         --outfile ${DNSMOS_JSON_FILE} \

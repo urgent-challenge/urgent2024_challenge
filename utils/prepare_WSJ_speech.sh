@@ -27,6 +27,7 @@ fi
 #################################
 if ! command -v sph2pipe; then
     echo "Installing sph2pipe from https://www.ldc.upenn.edu/language-resources/tools/sphere-conversion-tools"
+    SPH2PIPE_VERSION=2.5
 
     if [ ! -e sph2pipe_v${SPH2PIPE_VERSION}.tar.gz ]; then
         wget -nv -T 10 -t 3 -O sph2pipe_v${SPH2PIPE_VERSION}.tar.gz \
