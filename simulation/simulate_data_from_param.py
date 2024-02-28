@@ -196,19 +196,21 @@ def process_one_sample(
     speech_sample = read_audio(speech, force_1ch=force_1ch, fs=fs)[0]
     noise_sample = read_audio(noise, force_1ch=force_1ch, fs=fs)[0]
 
-    rng = np.random.default_rng(int(uid.split("_")[-1]))
-    noisy_speech, noise_sample = mix_noise(
-        speech_sample, noise_sample, snr=snr, rng=rng
-    )
-
     rir_uid = info["rir_uid"]
     if rir_uid != "none":
         rir = rir_dic[rir_uid]
         rir_sample = read_audio(rir, force_1ch=force_1ch, fs=fs)[0]
-        noisy_speech = add_reverberation(noisy_speech, rir_sample)
+        noisy_speech = add_reverberation(speech_sample, rir_sample)
         # make sure the clean speech is aligned with the input noisy speech
         early_rir_sample = estimate_early_rir(rir_sample, fs=fs)
         speech_sample = add_reverberation(speech_sample, early_rir_sample)
+    else:
+        noisy_speech = speech_sample
+
+    rng = np.random.default_rng(int(uid.split("_")[-1]))
+    noisy_speech, noise_sample = mix_noise(
+        noisy_speech, noise_sample, snr=snr, rng=rng
+    )
 
     augmentation = info["augmentation"]
     # apply an additional augmentation
