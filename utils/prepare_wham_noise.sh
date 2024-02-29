@@ -9,11 +9,15 @@ set -o pipefail
 output_dir="./wham_noise_48k"
 mkdir -p "${output_dir}"
 
+echo "=== Preparing WHAM! noise data ==="
 #################################
 # WHAM! noise (48 kHz, unsegmented)
 #################################
+echo "[WHAM! noise] downloading from https://my-bucket-a8b4b49c25c811ee9a7e8bba05fa24c7.s3.amazonaws.com/high_res_wham.zip"
 wget --continue "https://my-bucket-a8b4b49c25c811ee9a7e8bba05fa24c7.s3.amazonaws.com/high_res_wham.zip" -O "${output_dir}/high_res_wham.zip"
 unzip "${output_dir}/high_res_wham.zip" -d "${output_dir}"
+
+echo "[WHAM! noise] preparing data files"
 
 mkdir -p tmp
 find "${output_dir}/high_res_wham/audio/" -iname '*.wav' | \

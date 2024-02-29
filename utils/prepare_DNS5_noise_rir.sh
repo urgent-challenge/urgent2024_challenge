@@ -9,10 +9,12 @@ set -o pipefail
 # please do not add a trailing slash
 output_dir="./dns5_fullband"
 
+echo "=== Preparing DNS5 noise and RIR data ==="
 #################################
 # DNS5 noise and RIRs
 #################################
 # Refer to https://github.com/microsoft/DNS-Challenge/blob/master/download-dns-challenge-5-noise-ir.sh
+echo "[DNS5 noise and RIR] downloading"
 BLOB_NAMES=(
     noise_fullband/datasets_fullband.noise_fullband.audioset_000.tar.bz2
     noise_fullband/datasets_fullband.noise_fullband.audioset_001.tar.bz2
@@ -67,20 +69,35 @@ tar xfv "${output_dir}"/datasets_fullband.impulse_responses_000.tar.bz2 -C "${ou
 # Data preprocessing
 #################################
 mkdir -p tmp
-OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
-    --audio_dir ${output_dir}/datasets_fullband/noise_fullband/ \
-    --audio_format wav \
-    --chunksize 1000 \
-    --nj 8 \
-    --outfile tmp/dns5_noise.json
 
-OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/dns5_noise.json \
-   --out_scpfile tmp/dns5_noise_resampled.scp \
-   --outdir "${output_dir}/resampled/noise" \
-   --nj 8 \
-   --chunksize 1000
- 
+BW_EST_FILE=tmp/dns5_noise.json
+if [ ! -f ${BW_EST_FILE} ]; then
+    echo "[DNS5 noise and RIR] estimating audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+        --audio_dir ${output_dir}/datasets_fullband/noise_fullband/ \
+        --audio_format wav \
+        --chunksize 1000 \
+        --nj 8 \
+        --outfile "${BW_EST_FILE}"
+else
+    echo "Estimated bandwidth file already exists. Delete ${BW_EST_FILE} if you want to re-estimate."
+fi
+
+RESAMP_SCP_FILE=tmp/dns5_noise_resampled.scp
+if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    echo "[DNS5 noise and RIR] resampling to estimated audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
+        --bandwidth_data "${BW_EST_FILE}" \
+        --out_scpfile "${RESAMP_SCP_FILE}" \
+        --outdir "${output_dir}/resampled/noise" \
+        --nj 8 \
+        --chunksize 1000
+else
+    echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
+fi
+
+echo "[DNS5 noise and RIR] preparing data files"
+
 python - <<'EOF'
 from collections import defaultdict
 

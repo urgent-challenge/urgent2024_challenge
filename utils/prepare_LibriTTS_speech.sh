@@ -9,6 +9,7 @@ set -o pipefail
 output_dir="./libritts"
 mkdir -p "${output_dir}"
 
+echo "=== Preparing LibriTTS data ==="
 #################################
 # Download data
 #################################
@@ -27,34 +28,59 @@ done
 # Data preprocessing
 #################################
 mkdir -p tmp
-OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
-    --audio_dir "${output_dir}/LibriTTS/train-clean-100/" "${output_dir}/LibriTTS/train-clean-360/" \
-    --audio_format wav \
-    --chunksize 1000 \
-    --nj 8 \
-    --outfile tmp/libritts_train.json
+BW_EST_FILE=tmp/libritts_train.json
+if [ ! -f ${BW_EST_FILE} ]; then
+    echo "[LibriTTS-train] estimating audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+        --audio_dir "${output_dir}/LibriTTS/train-clean-100/" "${output_dir}/LibriTTS/train-clean-360/" \
+        --audio_format wav \
+        --chunksize 1000 \
+        --nj 8 \
+        --outfile "${BW_EST_FILE}"
+else
+    echo "Estimated bandwidth file already exists. Delete ${BW_EST_FILE} if you want to re-estimate."
+fi
 
-OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
-    --audio_dir "${output_dir}/LibriTTS/dev-clean/" \
-    --audio_format wav \
-    --chunksize 1000 \
-    --nj 8 \
-    --outfile tmp/libritts_validation.json
+RESAMP_SCP_FILE=libritts_resampled_train.scp
+if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    echo "[LibriTTS-train] resampling to estimated audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
+        --bandwidth_data "${BW_EST_FILE}" \
+        --out_scpfile "${RESAMP_SCP_FILE}" \
+        --outdir "${output_dir}/resampled/train" \
+        --nj 8 \
+        --chunksize 1000
+else
+    echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
+fi
 
-OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/libritts_train.json \
-   --out_scpfile libritts_resampled_train.scp \
-   --outdir "${output_dir}/resampled/train" \
-   --nj 8 \
-   --chunksize 1000
+BW_EST_FILE=tmp/libritts_validation.json
+if [ ! -f ${BW_EST_FILE} ]; then
+    echo "[LibriTTS-validation] estimating audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
+        --audio_dir "${output_dir}/LibriTTS/dev-clean/" \
+        --audio_format wav \
+        --chunksize 1000 \
+        --nj 8 \
+        --outfile "${BW_EST_FILE}"
+else
+    echo "Estimated bandwidth file already exists. Delete ${BW_EST_FILE} if you want to re-estimate."
+fi
 
-OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
-   --bandwidth_data tmp/libritts_validation.json \
-   --out_scpfile libritts_resampled_validation.scp \
-   --outdir "${output_dir}/resampled/dev" \
-   --nj 8 \
-   --chunksize 1000
+RESAMP_SCP_FILE=libritts_resampled_validation.scp
+if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    echo "[LibriTTS-train] resampling to estimated audio bandwidth"
+    OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
+        --bandwidth_data "${BW_EST_FILE}" \
+        --out_scpfile "${RESAMP_SCP_FILE}" \
+        --outdir "${output_dir}/resampled/dev" \
+        --nj 8 \
+        --chunksize 1000
+else
+    echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
+fi
 
+echo "[LibriTTS] preparing data files"
 python utils/get_libritts_transcript.py \
     --audio_scp libritts_resampled_train.scp \
     --audio_dir "${output_dir}/LibriTTS/train-clean-100/" "${output_dir}/LibriTTS/train-clean-360/" \

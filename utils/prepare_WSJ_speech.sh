@@ -8,6 +8,7 @@ set -o pipefail
 
 output_dir="./wsj"
 
+echo "=== Preparing WSJ data ==="
 #################################
 # Download data
 #################################
@@ -49,28 +50,35 @@ fi
 #################################
 # Convert sph formats to wav
 #################################
-find "${output_dir}/wsj0/" -iname '*.wv1' | while read -r fname; do
-    # It takes ~23 minutes to finish audio format conversion in "${output_dir}/wsj0_wav"
-    fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
-    fdir=$(realpath --relative-to="${output_dir}/wsj0/" $(dirname "${fname}"))
-    out="${output_dir}/wsj0_wav/${fdir}/${fbasename}.wav"
-    mkdir -p "${output_dir}/wsj0_wav/${fdir}"
-    "${sph2pipe}" -f wav "${fname}" > "${out}"
-done
+if [ ! -e "tmp/wsj_sph2wav.done" ]; then
+    echo "[WSJ] converting sph audios to wav"
+    find "${output_dir}/wsj0/" -iname '*.wv1' | while read -r fname; do
+        # It takes ~23 minutes to finish audio format conversion in "${output_dir}/wsj0_wav"
+        fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
+        fdir=$(realpath --relative-to="${output_dir}/wsj0/" $(dirname "${fname}"))
+        out="${output_dir}/wsj0_wav/${fdir}/${fbasename}.wav"
+        mkdir -p "${output_dir}/wsj0_wav/${fdir}"
+        "${sph2pipe}" -f wav "${fname}" > "${out}"
+    done
 
-find "${output_dir}/wsj1/" -iname '*.wv1' | while read -r fname; do
-    # It takes ~1 hour to finish audio format conversion in "${output_dir}/wsj1_wav"
-    fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
-    fdir=$(realpath --relative-to="${output_dir}/wsj1/" $(dirname "${fname}"))
-    out="${output_dir}/wsj1_wav/${fdir}/${fbasename}.wav"
-    mkdir -p "${output_dir}/wsj1_wav/${fdir}"
-    "${sph2pipe}" -f wav "${fname}" > "${out}"
-done
+    find "${output_dir}/wsj1/" -iname '*.wv1' | while read -r fname; do
+        # It takes ~1 hour to finish audio format conversion in "${output_dir}/wsj1_wav"
+        fbasename=$(basename "${fname}" | sed -e 's/\.wv1$//i')
+        fdir=$(realpath --relative-to="${output_dir}/wsj1/" $(dirname "${fname}"))
+        out="${output_dir}/wsj1_wav/${fdir}/${fbasename}.wav"
+        mkdir -p "${output_dir}/wsj1_wav/${fdir}"
+        "${sph2pipe}" -f wav "${fname}" > "${out}"
+    done
+    touch tmp/wsj_sph2wav.done
+else
+    echo "[WSJ] sph format conversion already finished"
+fi
 
 
 #################################
 # Data preprocessing
 #################################
+echo "[WSJ] preparing data files"
 mkdir -p tmp
 
 sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' -e 's#:wsj0/# wsj0/#g' "${output_dir}/wsj1/13-34.1/wsj1/doc/indices/si_tr_s.ndx" "${output_dir}/wsj0/11-13.1/wsj0/doc/indices/train/tr_s_wv1.ndx" | \

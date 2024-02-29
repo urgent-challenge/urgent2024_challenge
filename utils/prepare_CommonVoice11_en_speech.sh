@@ -9,6 +9,7 @@ set -o pipefail
 dnsmos_model_dir="./DNSMOS"
 output_dir="./datasets_cv11_en/cv-corpus-11.0-2022-09-21/en"
 
+echo "=== Preparing CommonVoice data ==="
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
     exit 1
@@ -28,6 +29,7 @@ fi
 mkdir -p tmp
 BW_EST_FILE=tmp/commonvoice_11.0_en.json
 if [ ! -f ${BW_EST_FILE} ]; then
+    echo "[CommonVoice] estimating audio bandwidth"
     OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
         --audio_dir "${output_dir}/clips/" \
         --audio_format mp3 \
@@ -40,6 +42,7 @@ fi
 
 RESAMP_SCP_FILE=tmp/commonvoice_11.0_en_resampled.scp
 if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    echo "[CommonVoice] resampling to estimated audio bandwidth"
     OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
        --bandwidth_data ${BW_EST_FILE} \
        --out_scpfile ${RESAMP_SCP_FILE} \
@@ -60,6 +63,7 @@ if [ -f ${DNSMOS_GZ_FILE} ]; then
     gunzip -c ${DNSMOS_GZ_FILE} > ${DNSMOS_JSON_FILE}
 fi
 if [ ! -f ${DNSMOS_JSON_FILE} ]; then
+    echo "[CommonVoice] calculating DNSMOS scores"
     python utils/get_dnsmos.py \
         --json_path "${RESAMP_SCP_FILE}" \
         --outfile "${DNSMOS_JSON_FILE}" \
@@ -76,6 +80,7 @@ fi
 # remove low-quality samples
 FILTERED_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered.scp
 if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    echo "[CommonVoice] filtering via DNSMOS"
     python utils/filter_via_dnsmos.py \
         --scp_path "${RESAMP_SCP_FILE}" \
         --json_path "${DNSMOS_JSON_FILE}" \
@@ -90,6 +95,7 @@ fi
 # remove non-speech samples
 VAD_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered_vad.scp
 if [ ! -f ${VAD_SCP_FILE} ]; then
+    echo "[CommonVoice] filtering via VAD"
     OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
         --scp_path "${FILTERED_SCP_FILE}" \
         --outfile "${VAD_SCP_FILE}" \
@@ -101,6 +107,7 @@ else
     echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
 fi
 
+echo "[CommonVoice] preparing data files"
 python utils/get_commonvoice_subset_split.py \
     --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
     --tsv_path "${output_dir}/train.tsv" \

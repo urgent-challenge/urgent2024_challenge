@@ -9,7 +9,7 @@ set -o pipefail
 dnsmos_model_dir="./DNSMOS"
 output_dir="./dns5_fullband"
 
-
+echo "=== Preparing DNS5 LibriVox speech data ==="
 if [ ! -d "${dnsmos_model_dir}/DNSMOS" ]; then
     echo "Please manually download all models (*.onnx) from https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS/DNSMOS and set the variable 'dnsmos_model_dir'"
     exit 1
@@ -26,6 +26,7 @@ fi
 mkdir -p tmp
 BW_EST_FILE=tmp/dns5_clean_read_speech.json
 if [ ! -f ${BW_EST_FILE} ]; then
+    echo "[DNS5 LibriVox] estimating audio bandwidth"
     OMP_NUM_THREADS=1 python utils/estimate_audio_bandwidth.py \
         --audio_dir ${output_dir}/Track1_Headset/mnt/dnsv5/clean/read_speech/ \
         --audio_format wav \
@@ -38,6 +39,7 @@ fi
 
 RESAMP_SCP_FILE=tmp/dns5_clean_read_speech_resampled.scp
 if [ ! -f ${RESAMP_SCP_FILE} ]; then
+    echo "[DNS5 LibriVox] resampling to estimated audio bandwidth"
     OMP_NUM_THREADS=1 python utils/resample_to_estimated_bandwidth.py \
        --bandwidth_data ${BW_EST_FILE} \
        --out_scpfile ${RESAMP_SCP_FILE} \
@@ -59,6 +61,7 @@ if [ -f ${DNSMOS_GZ_FILE} ]; then
 fi
 if [ ! -f ${DNSMOS_JSON_FILE} ]; then
     # It took around 35 hours with a single RTX 2080 Ti GPU
+    echo "[DNS5 LibriVox] calculating DNSMOS scores"
     python utils/get_dnsmos.py \
         --json_path ${RESAMP_SCP_FILE} \
         --outfile ${DNSMOS_JSON_FILE} \
@@ -75,6 +78,7 @@ fi
 # remove low-quality samples
 FILTERED_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered.scp"
 if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    echo "[DNS5 LibriVox] filtering via DNSMOS"
     python utils/filter_via_dnsmos.py \
         --scp_path "${RESAMP_SCP_FILE}" \
         --json_path "${DNSMOS_JSON_FILE}" \
@@ -87,6 +91,7 @@ fi
 # remove non-speech samples
 VAD_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered_vad.scp"
 if [ ! -f ${VAD_SCP_FILE} ]; then
+    echo "[DNS5 LibriVox] filtering via VAD"
     OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
         --scp_path ${FILTERED_SCP_FILE} \
         --outfile ${VAD_SCP_FILE} \
@@ -98,6 +103,7 @@ else
     echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
 fi
 
+echo "[DNS5 LibriVox] preparing data files"
 sort -u tmp/dns5_clean_read_speech_resampled_filtered_vad.scp | \
     awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" dns5_"spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
 utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt
