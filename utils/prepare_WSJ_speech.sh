@@ -89,7 +89,7 @@ sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' "${output_dir}/wsj1/13-34.1/
     awk -v out="${output_dir}" '{if(substr($1,1,1)!=";"){n=split($2,a,"/"); split(a[n],b,"."); split($1,c,"_"); str=c[1]"-"c[2]"."c[3]; if(substr($2,length($2)-3,4)!=".wv1"){$2=$2".wav";} print(b[1]" "out"/"a[1]"_wav/"str"/"$2)}}' | \
     sed -e 's#\.wv1$#.wav#g' | sort -u > tmp/wsj_test_dev93.scp
 
-python get_wsj_transcript.py \
+python utils/get_wsj_transcript.py \
     --audio_scp tmp/wsj_train_si284.scp tmp/wsj_test_dev93.scp \
     --audio_dir "${output_dir}/wsj0/" "${output_dir}/wsj1/" \
     --chunksize 1000 \
