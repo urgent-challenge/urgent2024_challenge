@@ -27,7 +27,6 @@ export OUTDIR=${output_dir}
 export -f download_dataset
 
 echo "[DNS5 LibriVox] Downloading"
-mkdir -p ${output_dir}
 
 url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset/${subdir}"
 count=$(ls "${output_dir}"/read_speech.tgz.parta? | wc -l)

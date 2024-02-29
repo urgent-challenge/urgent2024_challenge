@@ -107,7 +107,7 @@ done
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
-utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir}"/speech_train \
+utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" --skip_fix true "${output_dir}"/speech_train \
     "${output_dir}"/tmp/dns5_librivox_train \
     "${output_dir}"/tmp/libritts_train \
     "${output_dir}"/tmp/vctk_train \
