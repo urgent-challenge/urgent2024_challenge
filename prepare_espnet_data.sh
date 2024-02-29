@@ -38,91 +38,118 @@ output_dir="./data"
 ################################
 mkdir -p "${output_dir}/tmp"
 
-# It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
-./utils/prepare_DNS5_librivox_speech.sh
-for subset in train; do
-    mkdir -p "${output_dir}/tmp/dns5_librivox_${subset}"
-    awk '{print $1" "$3}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp
-    cp dns5_clean_read_speech_resampled_filtered_${subset}.utt2spk "${output_dir}"/tmp/dns5_librivox_${subset}/utt2spk
-    cp dns5_clean_read_speech_resampled_filtered_${subset}.text "${output_dir}"/tmp/dns5_librivox_${subset}/text
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/dns5_librivox_${subset}/utt2spk > "${output_dir}"/tmp/dns5_librivox_${subset}/spk2utt
-    awk '{print $1" "$2}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2category
-    cp "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp "${output_dir}"/tmp/dns5_librivox_${subset}/spk1.scp
-    mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
-done
+if [ ! -e "${output_dir}/tmp/dns5_librivox.done" ]; then
+    # It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
+    ./utils/prepare_DNS5_librivox_speech.sh
+    for subset in train; do
+        mkdir -p "${output_dir}/tmp/dns5_librivox_${subset}"
+        awk '{print $1" "$3}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp
+        cp dns5_clean_read_speech_resampled_filtered_${subset}.utt2spk "${output_dir}"/tmp/dns5_librivox_${subset}/utt2spk
+        cp dns5_clean_read_speech_resampled_filtered_${subset}.text "${output_dir}"/tmp/dns5_librivox_${subset}/text
+        utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/dns5_librivox_${subset}/utt2spk > "${output_dir}"/tmp/dns5_librivox_${subset}/spk2utt
+        awk '{print $1" "$2}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2fs
+        awk '{print $1" 1ch_"$2"Hz"}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2category
+        cp "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp "${output_dir}"/tmp/dns5_librivox_${subset}/spk1.scp
+        mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+    done
+fi
+touch "${output_dir}/tmp/dns5_librivox.done"
 
-# It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
-./utils/prepare_CommonVoice11_en_speech.sh
-for subset in train; do
-    mkdir -p "${output_dir}/tmp/commonvoice_11_en_${subset}"
-    awk '{print $1" "$3}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp
-    cp commonvoice_11.0_en_resampled_filtered_${subset}.utt2spk "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk
-    cp commonvoice_11.0_en_resampled_filtered_${subset}.text "${output_dir}"/tmp/commonvoice_11_en_${subset}/text
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk > "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk2utt
-    awk '{print $1" "$2}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2category
-    cp "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk1.scp
-    mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
-done
+if [ ! -e "${output_dir}/tmp/commonvoice.done" ]; then
+    # It is recommended to use GPU (--use_gpu True) to run `python utils/get_dnsmos.py` inside the following script
+    ./utils/prepare_CommonVoice11_en_speech.sh
+    for subset in train; do
+        mkdir -p "${output_dir}/tmp/commonvoice_11_en_${subset}"
+        awk '{print $1" "$3}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp
+        cp commonvoice_11.0_en_resampled_filtered_${subset}.utt2spk "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk
+        cp commonvoice_11.0_en_resampled_filtered_${subset}.text "${output_dir}"/tmp/commonvoice_11_en_${subset}/text
+        utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2spk > "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk2utt
+        awk '{print $1" "$2}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2fs
+        awk '{print $1" 1ch_"$2"Hz"}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2category
+        cp "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk1.scp
+        mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+    done
+fi
+touch "${output_dir}/tmp/commonvoice.done"
 
-./utils/prepare_LibriTTS_speech.sh
-for subset in train; do
-    mkdir -p "${output_dir}/tmp/libritts_${subset}"
-    awk '{print $1" "$3}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/wav.scp
-    cp libritts_resampled_${subset}.utt2spk "${output_dir}"/tmp/libritts_${subset}/utt2spk
-    cp libritts_resampled_${subset}.text "${output_dir}"/tmp/libritts_${subset}/text
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/libritts_${subset}/utt2spk > "${output_dir}"/tmp/libritts_${subset}/spk2utt
-    awk '{print $1" "$2}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2category
-    cp "${output_dir}"/tmp/libritts_${subset}/wav.scp "${output_dir}"/tmp/libritts_${subset}/spk1.scp
-    mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
-done
+if [ ! -e "${output_dir}/tmp/libritts.done" ]; then
+    ./utils/prepare_LibriTTS_speech.sh
+    for subset in train; do
+        mkdir -p "${output_dir}/tmp/libritts_${subset}"
+        awk '{print $1" "$3}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/wav.scp
+        cp libritts_resampled_${subset}.utt2spk "${output_dir}"/tmp/libritts_${subset}/utt2spk
+        cp libritts_resampled_${subset}.text "${output_dir}"/tmp/libritts_${subset}/text
+        utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/libritts_${subset}/utt2spk > "${output_dir}"/tmp/libritts_${subset}/spk2utt
+        awk '{print $1" "$2}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2fs
+        awk '{print $1" 1ch_"$2"Hz"}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2category
+        cp "${output_dir}"/tmp/libritts_${subset}/wav.scp "${output_dir}"/tmp/libritts_${subset}/spk1.scp
+        mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
+    done
+fi
+touch "${output_dir}/tmp/libritts.done"
 
-./utils/prepare_VCTK_speech.sh
-for subset in train; do
-    mkdir -p "${output_dir}/tmp/vctk_${subset}"
-    awk '{print $1" "$3}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/wav.scp
-    cp vctk_${subset}.utt2spk "${output_dir}"/tmp/vctk_${subset}/utt2spk
-    cp vctk_${subset}.text "${output_dir}"/tmp/vctk_${subset}/text
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/vctk_${subset}/utt2spk > "${output_dir}"/tmp/vctk_${subset}/spk2utt
-    awk '{print $1" "$2}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2category
-    cp "${output_dir}"/tmp/vctk_${subset}/wav.scp "${output_dir}"/tmp/vctk_${subset}/spk1.scp
-    mv vctk_${subset}.* "${output_dir}/tmp/"
-done
+if [ ! -e "${output_dir}/tmp/vctk.done" ]; then
+    ./utils/prepare_VCTK_speech.sh
+    for subset in train; do
+        mkdir -p "${output_dir}/tmp/vctk_${subset}"
+        awk '{print $1" "$3}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/wav.scp
+        cp vctk_${subset}.utt2spk "${output_dir}"/tmp/vctk_${subset}/utt2spk
+        cp vctk_${subset}.text "${output_dir}"/tmp/vctk_${subset}/text
+        utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/vctk_${subset}/utt2spk > "${output_dir}"/tmp/vctk_${subset}/spk2utt
+        awk '{print $1" "$2}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2fs
+        awk '{print $1" 1ch_"$2"Hz"}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2category
+        cp "${output_dir}"/tmp/vctk_${subset}/wav.scp "${output_dir}"/tmp/vctk_${subset}/spk1.scp
+        mv vctk_${subset}.* "${output_dir}/tmp/"
+    done
+fi
+touch "${output_dir}/tmp/vctk.done"
 
-./utils/prepare_WSJ_speech.sh
-for subset in train; do
-   mkdir -p "${output_dir}/tmp/wsj_${subset}"
-   awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
-   cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
-   cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
-   utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
-   awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
-   awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
-   cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
-   mv wsj_${subset}.* "${output_dir}/tmp/"
-done
+if [ ! -e "${output_dir}/tmp/wsj.done" ]; then
+    ./utils/prepare_WSJ_speech.sh
+    for subset in train; do
+    mkdir -p "${output_dir}/tmp/wsj_${subset}"
+    awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
+    cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
+    cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
+    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
+    awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
+    awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
+    cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
+    mv wsj_${subset}.* "${output_dir}/tmp/"
+    done
+fi
+touch "${output_dir}/tmp/wsj.done"
 
 # Combine all data
 mkdir -p "${output_dir}/speech_train"
-utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" --skip_fix true "${output_dir}"/speech_train \
-    "${output_dir}"/tmp/dns5_librivox_train \
-    "${output_dir}"/tmp/libritts_train \
-    "${output_dir}"/tmp/vctk_train \
-    "${output_dir}"/tmp/commonvoice_11_en_train \
-    "${output_dir}"/tmp/wsj_train
+if [ ! -e "${output_dir}/tmp/speech_train.done" ]; then
+    utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" --skip_fix true "${output_dir}"/speech_train \
+        "${output_dir}"/tmp/dns5_librivox_train \
+        "${output_dir}"/tmp/libritts_train \
+        "${output_dir}"/tmp/vctk_train \
+        "${output_dir}"/tmp/commonvoice_11_en_train \
+        "${output_dir}"/tmp/wsj_train
+fi
+touch "${output_dir}/tmp/speech_train.done"
 
 ################################
 # Noise and RIR data
 ################################
-./utils/prepare_DNS5_noise_rir.sh
+if [ ! -e "${output_dir}/tmp/dns5_noise_rir.done" ]; then
+    ./utils/prepare_DNS5_noise_rir.sh
+fi
+touch "${output_dir}/tmp/dns5_noise_rir.done"
 
-./utils/prepare_WHAM_noise.sh
+if [ ! -e "${output_dir}/tmp/wham_noise.done" ]; then
+    ./utils/prepare_WHAM_noise.sh
+fi
+touch "${output_dir}/tmp/wham_noise.done"
 
 if [ $USE_EPIC_SOUNDS -eq 1 ]; then
-    ./utils/prepare_EPIC_SOUNDS_noise.sh
+    if [ ! -e "${output_dir}/tmp/epic_sounds_noise.done" ]; then
+        ./utils/prepare_EPIC_SOUNDS_noise.sh
+    fi
+    touch "${output_dir}/tmp/epic_sounds_noise.done"
 
     # Combine all data for the training set
     awk '{print $3}' dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp > "${output_dir}/noise_train.scp"
@@ -141,13 +168,16 @@ awk '{print $3}' dns5_rirs.scp > "${output_dir}/rir_train.scp"
 ##########################################
 # Note: remember to modify placeholders in conf/simulation_validation.yaml before simulation.
 mkdir -p simulation_validation/log
-python simulation/generate_data_param.py --config conf/simulation_validation.yaml
-# It takes ~30 minutes to finish simulation with nj=8
-OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
-    --config conf/simulation_validation.yaml \
-    --meta_tsv simulation_validation/log/meta.tsv \
-    --nj 8 \
-    --chunksize 200
+if [ ! -e "${output_dir}/tmp/simulation_validation.done" ]; then
+    python simulation/generate_data_param.py --config conf/simulation_validation.yaml
+    # It takes ~30 minutes to finish simulation with nj=8
+    OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
+        --config conf/simulation_validation.yaml \
+        --meta_tsv simulation_validation/log/meta.tsv \
+        --nj 8 \
+        --chunksize 200
+fi
+touch "${output_dir}/tmp/simulation_validation.done"
 
 mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
 if [ $USE_EPIC_SOUNDS -eq 1 ]; then
