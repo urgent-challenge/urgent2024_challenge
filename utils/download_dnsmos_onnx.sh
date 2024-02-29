@@ -16,5 +16,10 @@ URL=https://github.com/microsoft/DNS-Challenge/raw/master/DNSMOS/DNSMOS
 MODELS=(bak_ovr.onnx model_v8.onnx sig.onnx sig_bak_ovr.onnx)
 
 for model in ${MODELS[@]}; do
-    wget -c -O DNSMOS/DNSMOS/$model $URL/$model
+    if [ ! -e "DNSMOS/DNSMOS/$model" ]; then
+        echo "[DNSMOS ONNX] downloading model ${URL}/${model}"
+        wget -c -O DNSMOS/DNSMOS/$model $URL/$model
+    else
+        echo "[DNSMOS ONNX] 'DNSMOS/DNSMOS/$model' already exists"
+    fi
 done
