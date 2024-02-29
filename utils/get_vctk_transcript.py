@@ -62,5 +62,8 @@ if __name__ == "__main__":
                     )
                     out.write(f"{uid} <not-available>\n")
                     continue
-                transcript = ret[uid]
+                if uid.endswith("_mic1") or uid.endswith("_mic2"):
+                    transcript = ret[uid[:-5]]
+                else:
+                    transcript = ret[uid]
                 out.write(f"{uid} {transcript}\n")

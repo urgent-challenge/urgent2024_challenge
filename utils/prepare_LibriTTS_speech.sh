@@ -17,12 +17,17 @@ echo "=== Preparing LibriTTS data ==="
 # download in parallel using xargs
 echo "Download LibriTTS data from https://www.openslr.org/60/"
 urlbase="https://www.openslr.org/resources/60"
-echo "train-clean-100 train-clean-360 dev-clean" | tr " " "\n" \
-    | xargs -n 1 -P 3 -I{} \
-    wget --no-check-certificate --continue "${urlbase}/{}.tar.gz" -O "${output_dir}/{}.tar.gz"
-for x in "${output_dir}"/*.tar.gz; do                                                 
-    tar xfv "$x" -C "${output_dir}"
-done
+if [ !-e "${output_dir}/download_libritts.done" ]; then
+    echo "train-clean-100 train-clean-360 dev-clean" | tr " " "\n" \
+        | xargs -n 1 -P 3 -I{} \
+        wget --no-check-certificate --continue "${urlbase}/{}.tar.gz" -O "${output_dir}/{}.tar.gz"
+    for x in "${output_dir}"/*.tar.gz; do                                                 
+        tar xfv "$x" -C "${output_dir}"
+    done
+else
+    echo "Skip downloading LibriTTS as it has already finished"
+fi
+touch "${output_dir}"/download_libritts.done
 
 #################################
 # Data preprocessing

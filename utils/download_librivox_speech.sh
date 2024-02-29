@@ -26,11 +26,22 @@ NPROC=13
 export OUTDIR=${output_dir}
 export -f download_dataset
 
+echo "[DNS5 LibriVox] Downloading"
 mkdir -p ${output_dir}
 
 url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset/${subdir}"
-echo ${url}/${filename}{a..u} | xargs -n 1 -P ${NPROC} bash -c 'download_dataset "$0"'
+count=$(ls "${output_dir}"/read_speech.tgz.parta? | wc -l)
+if [ "$count" = "21" ]; then
+    echo "Skipping downloading as all 21 ${output_dir}/read_speech.tgz.parta? files already exist"
+else
+    echo ${url}/${filename}{a..u} | xargs -n 1 -P ${NPROC} bash -c 'download_dataset "$0"'
+fi
 
 # concatenate the files
 echo "Extract DNSv5 challenge speech data"
-cat "${output_dir}"/read_speech.tgz.parta? | python ./utils/tar_extractor.py -m 5000 --pipe -o ${output_dir} --skip_existing --skip_errors
+if [ ! -e "${output_dir}/download.done" ]; then
+    cat "${output_dir}"/read_speech.tgz.parta? | python ./utils/tar_extractor.py -m 5000 --pipe -o ${output_dir} --skip_existing --skip_errors
+else
+    echo "Skipping extraction as it has already been done"
+fi
+touch ${output_dir}/download.done

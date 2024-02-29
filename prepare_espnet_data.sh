@@ -119,10 +119,10 @@ utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" "${output_dir
 ################################
 ./utils/prepare_DNS5_noise_rir.sh
 
-./utils/prepare_wham_noise.sh
+./utils/prepare_WHAM_noise.sh
 
 if [ $USE_EPIC_SOUNDS -eq 1 ]; then
-    ./utils/prepare_epic_sounds_noise.sh
+    ./utils/prepare_EPIC_SOUNDS_noise.sh
 
     # Combine all data for the training set
     awk '{print $3}' dns5_noise_resampled_train.scp wham_noise_train.scp epic_sounds_noise_resampled_train.scp > "${output_dir}/noise_train.scp"
