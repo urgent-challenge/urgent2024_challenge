@@ -10,7 +10,7 @@ speech_utt2spk:
 - vctk_train.utt2spk
 - commonvoice_11.0_en_resampled_filtered_train.utt2spk
 
-speech_utt2spk:
+speech_text:
 - dns5_clean_read_speech_resampled_filtered_train.text
 - libritts_resampled_train.text
 - vctk_train.text
@@ -24,7 +24,7 @@ seed: 0
 noise_scps:
 - dns5_noise_resampled_train.scp
 - wham_noise_train.scp
-- epic_sounds_noise_resampled_train.scp
+#- epic_sounds_noise_resampled_train.scp
 snr_low_bound: -5.0
 snr_high_bound: 20.0
 reuse_noise: true
