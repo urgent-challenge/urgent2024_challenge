@@ -145,8 +145,12 @@ def main(args):
             sid = utt2spk[uid]
             transcript = text.get(uid, "<not-available>")
             # Load speech sample (Channel, Time)
-            with sf.SoundFile(audio_path) as af:
-                speech_length = af.frames
+            if audio_path.endswith(".wav"):
+                with sf.SoundFile(audio_path) as af:
+                    speech_length = af.frames
+            else:
+                # Sometimes the acutal loaded audio's length differs from af.frames
+                speech_length = sf.read(audio_path)[0].shape[0]
 
             # Select an additional augmentation for each repeat
             opts = {
