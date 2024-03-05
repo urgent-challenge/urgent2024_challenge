@@ -67,4 +67,5 @@ if __name__ == "__main__":
     outdir.mkdir(parents=True, exist_ok=True)
     with Path(args.outfile).open("w") as f:
         for uid in uids:
-            f.write(f"{uid} {info[uid][0]} {info[uid][1]}\n")
+            if uid in info:
+                f.write(f"{uid} {info[uid][0]} {info[uid][1]}\n")

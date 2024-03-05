@@ -51,9 +51,9 @@ else
     echo "Resampled scp file already exists. Delete ${RESAMP_SCP_FILE} if you want to re-resample."
 fi
 
-#################################
-# Data filtering based on DNSMOS
-#################################
+#########################################
+# Data filtering based on VAD and DNSMOS
+#########################################
 DNSMOS_JSON_FILE="tmp/dns5_clean_read_speech_resampled_dnsmos.json"
 DNSMOS_GZ_FILE="data/`basename ${DNSMOS_JSON_FILE}`.gz"
 if [ -f ${DNSMOS_GZ_FILE} ]; then
@@ -75,25 +75,12 @@ else
     echo "DNSMOS json file already exists. Delete ${DNSMOS_JSON_FILE} if you want to re-estimate."
 fi
 
-# remove low-quality samples
-FILTERED_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered.scp"
-if [ ! -f ${FILTERED_SCP_FILE} ]; then
-    echo "[DNS5 LibriVox] filtering via DNSMOS"
-    python utils/filter_via_dnsmos.py \
-        --scp_path "${RESAMP_SCP_FILE}" \
-        --json_path "${DNSMOS_JSON_FILE}" \
-        --outfile ${FILTERED_SCP_FILE} \
-        --score_name BAK --threshold 3.0
-else
-    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
-fi
-
 # remove non-speech samples
 VAD_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered_vad.scp"
 if [ ! -f ${VAD_SCP_FILE} ]; then
     echo "[DNS5 LibriVox] filtering via VAD"
     OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
-        --scp_path ${FILTERED_SCP_FILE} \
+        --scp_path ${RESAMP_SCP_FILE} \
         --outfile ${VAD_SCP_FILE} \
         --vad_mode 2 \
         --threshold 0.2 \
@@ -103,12 +90,25 @@ else
     echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
 fi
 
+# remove low-quality samples
+FILTERED_SCP_FILE="tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.scp"
+if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    echo "[DNS5 LibriVox] filtering via DNSMOS"
+    python utils/filter_via_dnsmos.py \
+        --scp_path "${VAD_SCP_FILE}" \
+        --json_path "${DNSMOS_JSON_FILE}" \
+        --outfile ${FILTERED_SCP_FILE} \
+        --score_name BAK --threshold 3.0
+else
+    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
+fi
+
 echo "[DNS5 LibriVox] preparing data files"
-sort -u tmp/dns5_clean_read_speech_resampled_filtered_vad.scp | \
-    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" dns5_"spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk
-utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered_vad.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt
-head -n 90 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt
-tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered_vad.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
+sort -u tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.scp | \
+    awk '{split($1, arr, "_"); if(arr[5]!="reader"){exit 1;} spk=arr[5]"_"arr[6]; print($1" dns5_"spk)}' > tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.utt2spk
+utils/utt2spk_to_spk2utt.pl tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.utt2spk > tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.spk2utt
+head -n 90 tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt
+tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt > dns5_clean_read_speech_resampled_filtered_validation.utt2spk
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt > dns5_clean_read_speech_resampled_filtered_train.utt2spk
 utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_validation.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_validation.scp

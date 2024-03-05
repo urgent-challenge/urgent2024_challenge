@@ -5,13 +5,13 @@ Official data preparation scripts for the URGENT 2024 Challenge
 
 - `>8` Cores
 - At least `1` GPU (4 or 8 GPUs are recommended for speedup in DNSMOS or other DNN-based metric calculation)
-- At least 1.4 TB of free disk space
+- At least 1.2 TB of free disk space
   - Speech
-    - DNS5 speech (original 80 GB + resampled 57 GB): 137 GB
+    - DNS5 speech (original 131 GB + resampled 187 GB): 318 GB
     - CommonVoice English speech (original mp3 82 GB + resampled 509 GB): 591 GB
     - LibriTTS (original 44 GB + resampled 7 GB): 51 GB
     - VCTK: 12 GB
-    - WSJ (original sph 15GB + converted 31 GB): 46 GB
+    - WSJ (original sph 24GB + converted 31 GB): 55 GB
   - Noise
     - DNS5 noise (original 58 GB + resampled 35 GB): 93 GB
     - WHAM! noise (48 kHz): 76 GB
@@ -19,7 +19,7 @@ Official data preparation scripts for the URGENT 2024 Challenge
   - RIR
     - DNS5 RIRs (48 kHz): 6 GB
   - Others
-    - default simulated validation data: ~11 GB
+    - default simulated validation data: ~16 GB
 
 With minimum specs, expects the whole process to take YYY hours.
 

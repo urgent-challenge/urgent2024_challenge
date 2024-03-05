@@ -160,7 +160,7 @@ if __name__ == "__main__":
     start = (args.job - 1) * interval
     end = size if args.job == args.nsplits else start + interval
     data = {k: data[k] for k in keys[start:end]}
-    print(f"Processing ({len(data)/size}) samples", flush=True)
+    print(f"Processing ({len(data)}/{size}) samples", flush=True)
 
     out_json = get_dnsmos(data, dnsmos_model)
     outdir = Path(args.outfile).parent

@@ -77,27 +77,12 @@ else
     echo "DNSMOS json file already exists. Delete ${DNSMOS_JSON_FILE} if you want to re-estimate."
 fi
 
-# remove low-quality samples
-FILTERED_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered.scp
-if [ ! -f ${FILTERED_SCP_FILE} ]; then
-    echo "[CommonVoice] filtering via DNSMOS"
-    python utils/filter_via_dnsmos.py \
-        --scp_path "${RESAMP_SCP_FILE}" \
-        --json_path "${DNSMOS_JSON_FILE}" \
-        --outfile "${FILTERED_SCP_FILE}" \
-        --score_name OVRL --threshold 3.0 \
-        --score_name SIG --threshold 3.0 \
-        --score_name BAK --threshold 3.0
-else
-    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
-fi
-
 # remove non-speech samples
 VAD_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered_vad.scp
 if [ ! -f ${VAD_SCP_FILE} ]; then
     echo "[CommonVoice] filtering via VAD"
     OMP_NUM_THREADS=1 python utils/filter_via_vad.py \
-        --scp_path "${FILTERED_SCP_FILE}" \
+        --scp_path "${RESAMP_SCP_FILE}" \
         --outfile "${VAD_SCP_FILE}" \
         --vad_mode 2 \
         --threshold 0.2 \
@@ -107,14 +92,29 @@ else
     echo "VAD scp file already exists. Delete ${VAD_SCP_FILE} if you want to re-estimate."
 fi
 
+# remove low-quality samples
+FILTERED_SCP_FILE=tmp/commonvoice_11.0_en_resampled_filtered_dnsmos.scp
+if [ ! -f ${FILTERED_SCP_FILE} ]; then
+    echo "[CommonVoice] filtering via DNSMOS"
+    python utils/filter_via_dnsmos.py \
+        --scp_path "${VAD_SCP_FILE}" \
+        --json_path "${DNSMOS_JSON_FILE}" \
+        --outfile "${FILTERED_SCP_FILE}" \
+        --score_name OVRL --threshold 3.0 \
+        --score_name SIG --threshold 3.0 \
+        --score_name BAK --threshold 3.0
+else
+    echo "Filtered scp file already exists. Delete ${FILTERED_SCP_FILE} if you want to re-estimate."
+fi
+
 echo "[CommonVoice] preparing data files"
 python utils/get_commonvoice_subset_split.py \
-    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
+    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_dnsmos.scp \
     --tsv_path "${output_dir}/train.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_train.scp
 
 python utils/get_commonvoice_subset_split.py \
-    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_vad.scp \
+    --scp_path tmp/commonvoice_11.0_en_resampled_filtered_dnsmos.scp \
     --tsv_path "${output_dir}/dev.tsv" \
     --outfile commonvoice_11.0_en_resampled_filtered_validation.scp
 
