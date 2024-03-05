@@ -282,7 +282,7 @@ if __name__ == "__main__":
     uids = [uid for uid in uids if uid is not None]
     print(f"Filtering: {len(info)} samples -> {len(uids)} samples")
     filtered_uids = set(list(info.keys())).difference(set(uids))
-    print(f"Filtered uids: {filtered_uids}")
+    print(f"Filtered uids ({len(filtered_uids)}): {filtered_uids}")
 
     outdir = Path(args.outfile).parent
     outdir.mkdir(parents=True, exist_ok=True)

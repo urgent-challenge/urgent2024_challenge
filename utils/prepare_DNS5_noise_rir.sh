@@ -52,19 +52,21 @@ wget --continue "$url/datasets_fullband.impulse_responses_000.tar.bz2" \
 #   --transform 's/datasets_fullband\/noise_fullband/freesound_000/'
 trans="s/datasets_fullband\/noise_fullband//"
 for sub in audioset freesound; do
-    if [ ${sub} -eq audioset ]; then
+    if [ "${sub}" = "audioset" ]; then
         n=6
     else
         n=1
     fi
-    for idx in `seq 0 ${n}`; do
+    for idx in $(seq 0 ${n}); do
         archive="${output_dir}/noise_fullband/datasets_fullband.noise_fullband.${sub}_00${idx}.tar.bz2"
         xdir="${output_dir}/datasets_fullband/noise_fullband/${sub}_00${idx}"
         mkdir -p ${xdir}
-        tar xfv "${archive}" --transform ${trans} -C "${xdir}"
+        echo "Extracting ${archive}"
+        tar xf "${archive}" --transform ${trans} -C "${xdir}"
     done
 done
-tar xfv "${output_dir}"/datasets_fullband.impulse_responses_000.tar.bz2 -C "${output_dir}"
+echo "Extracing ${output_dir}/datasets_fullband.impulse_responses_000.tar.bz2"
+tar xf "${output_dir}"/datasets_fullband.impulse_responses_000.tar.bz2 -C "${output_dir}"
 
 #################################
 # Data preprocessing
