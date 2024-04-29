@@ -91,8 +91,8 @@ def clipping(speech_sample, min_quantile: float = 0.0, max_quantile: float = 0.9
 
     Args:
         speech_sample (np.ndarray): a single speech sample (1, Time)
-        min_quantile (float): lower bound on the total percent of samples to be clipped
-        max_quantile (float): upper bound on the total percent of samples to be clipped
+        min_quantile (float): lower bound on the quantile of samples to be clipped
+        max_quantile (float): upper bound on the quantile of samples to be clipped
 
     Returns:
         ret (np.ndarray): clipped speech sample (1, Time)
@@ -223,7 +223,9 @@ def process_one_sample(
             noisy_speech, fs=fs, fs_new=int(fs_new), res_type=res_type
         )
     elif augmentation == "clipping":
-        noisy_speech = clipping(noisy_speech)
+        match = re.fullmatch(f"clipping\(min=(.*),max=(.*)\)", augmentation)
+        min_, max_ = map(float, match.groups())
+        noisy_speech = clipping(noisy_speech, min_quantile=min_, max_quantile=max_)
     else:
         raise NotImplementedError(augmentation)
 

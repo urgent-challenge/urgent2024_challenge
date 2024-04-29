@@ -1,4 +1,5 @@
 git+https://github.com/espnet/espnet.git
+espnet_model_zoo
 librosa
 numpy
 scipy

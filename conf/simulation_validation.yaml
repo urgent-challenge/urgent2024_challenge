@@ -42,5 +42,5 @@ weight_augmentations:
 - 1.0
 - 1.0
 - 1.0
-clipping_min_quantile: 0.1
-clipping_max_quantile: 0.9
+clipping_min_quantile: [0.0, 0.1]
+clipping_max_quantile: [0.9, 1.0]

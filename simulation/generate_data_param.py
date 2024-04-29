@@ -87,6 +87,7 @@ def save_audio(audio, filename, fs):
 #############################
 def main(args):
     speech_dic = defaultdict(dict)
+    # scp file of clean speech samples (three columns per line: uid, fs, audio_path)
     for scp in args.speech_scps:
         with open(scp, "r") as f:
             for line in f:
@@ -94,6 +95,7 @@ def main(args):
                 assert uid not in speech_dic[int(fs)], (uid, fs)
                 speech_dic[int(fs)][uid] = audio_path
 
+    # speaker ID of each sample (two columns per line: uid, speaker_id)
     utt2spk = {}
     for scp in args.speech_utt2spk:
         with open(scp, "r") as f:
@@ -102,6 +104,7 @@ def main(args):
                 assert uid not in utt2spk, (uid, sid)
                 utt2spk[uid] = sid
 
+    # transcript of each sample (two columns per line: uid, text)
     text = {}
     for scp in args.speech_text:
         with open(scp, "r") as f:
@@ -110,6 +113,7 @@ def main(args):
                 assert uid not in text, (uid, txt)
                 text[uid] = txt
 
+    # scp file of noise samples (three columns per line: uid, fs, audio_path)
     noise_dic = defaultdict(dict)
     for scp in args.noise_scps:
         with open(scp, "r") as f:
@@ -119,6 +123,7 @@ def main(args):
                 noise_dic[int(fs)][uid] = audio_path
     used_noise_dic = {fs: {} for fs in noise_dic.keys()}
 
+    # [optional] scp file of RIR samples (three columns per line: uid, fs, audio_path)
     rir_dic = None
     if args.rir_scps is not None and args.prob_reverberation > 0.0:
         rir_dic = defaultdict(dict)
@@ -139,11 +144,12 @@ def main(args):
 
     outdir = Path(args.output_dir)
     snr_range = (args.snr_low_bound, args.snr_high_bound)
+    clipping_range = (args.clipping_min_quantile, args.clipping_max_quantile)
     count = 0
     for fs in sorted(speech_dic.keys(), reverse=True):
         for uid, audio_path in tqdm(speech_dic[fs].items()):
             sid = utt2spk[uid]
-            transcript = text.get(uid, "<not-available>")
+            transcript = text.get(uid, "<not-available>")  # placeholder of missing text
             # Load speech sample (Channel, Time)
             if audio_path.endswith(".wav"):
                 with sf.SoundFile(audio_path) as af:
@@ -175,6 +181,7 @@ def main(args):
                     rir_dic=rir_dic,
                     used_rir_dic=used_rir_dic,
                     augmentation=augmentations[n],
+                    clipping_range=clipping_range,
                     force_1ch=True,
                 )
                 count += 1
@@ -212,6 +219,7 @@ def process_one_sample(
     rir_dic=None,
     used_rir_dic=None,
     augmentation="none",
+    clipping_range=((0.1, 0.1), (0.9, 0.9)),
     force_1ch=True,
 ):
     # select a noise sample
@@ -241,7 +249,9 @@ def process_one_sample(
         res_type, fs_new = bandwidth_limitation(fs=fs, res_type="random")
         augmentation = augmentation + f"-{res_type}->{fs_new}"
     elif augmentation == "clipping":
-        pass
+        min_quantile = np.random.uniform(clipping_range[0][0], clipping_range[0][1])
+        max_quantile = np.random.uniform(clipping_range[1][0], clipping_range[1][1])
+        augmentation = augmentation + f"(min={min_quantile},max={max_quantile})"
     else:
         raise NotImplementedError(augmentation)
 
@@ -420,14 +430,20 @@ def get_parser(parser=None):
     group.add_argument(
         "--clipping_min_quantile",
         type=float,
-        default=0.1,
-        help="Lower quantile in clipping",
+        default=[0.1],
+        nargs="+",
+        help="Range of the lower quantile in clipping\n"
+        "If only one value is provided, it will be used as a fixed lower bound;\n"
+        "otherwise, the lower bound will be randomly selected from the given range.",
     )
     group.add_argument(
         "--clipping_max_quantile",
         type=float,
-        default=0.9,
-        help="Higher quantile in clipping",
+        default=[0.9],
+        nargs="+",
+        help="Range of the higher quantile in clipping\n"
+        "(If only one value is provided, it will be used as a fixed upper bound;\n"
+        "otherwise, the upper bound will be randomly selected from the given range.",
     )
     parser.set_defaults(required=["speech_scps", "log_dir", "output_dir", "noise_scps"])
     return parser
@@ -446,7 +462,21 @@ if __name__ == "__main__":
     for w in args.weight_augmentations:
         assert w > 0.0, w
     assert len(args.weight_augmentations) == len(args.augmentations)
-    assert 0.0 <= args.clipping_min_quantile < args.clipping_max_quantile <= 1.0
+
+    for name in ("clipping_min_quantile", "clipping_max_quantile"):
+        cmq = getattr(args, name)
+        if len(cmq) == 1:
+            setattr(args, name, (cmq[0], cmq[0]))
+        elif len(cmq) == 2:
+            if cmq[0] > cmq[1]:
+                raise ValueError(
+                    f"Clipping quantile range should be in ascending order: {cmq}"
+                )
+        else:
+            raise ValueError(f"Invalid clipping quantile range: {cmq}")
+        for q in cmq:
+            assert 0.0 <= q <= 1.0, q
+    assert min(args.clipping_max_quantile) > max(args.clipping_min_quantile)
 
     outdir = Path(args.output_dir)
     (outdir / "clean").mkdir(parents=True, exist_ok=True)
