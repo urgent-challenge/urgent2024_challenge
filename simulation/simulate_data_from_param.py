@@ -222,7 +222,7 @@ def process_one_sample(
         noisy_speech = bandwidth_limitation(
             noisy_speech, fs=fs, fs_new=int(fs_new), res_type=res_type
         )
-    elif augmentation == "clipping":
+    elif augmentation.startswith("clipping"):
         match = re.fullmatch(f"clipping\(min=(.*),max=(.*)\)", augmentation)
         min_, max_ = map(float, match.groups())
         noisy_speech = clipping(noisy_speech, min_quantile=min_, max_quantile=max_)

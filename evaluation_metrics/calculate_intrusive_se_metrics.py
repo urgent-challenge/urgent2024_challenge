@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
 
+import fast_bss_eval
 import librosa
 import numpy as np
 import soundfile as sf
 import soxr
-from mir_eval.separation import bss_eval_sources
 from pesq import PesqError, pesq
 from pystoi import stoi
 from tqdm.contrib.concurrent import process_map
@@ -13,7 +13,7 @@ from tqdm.contrib.concurrent import process_map
 from mcd_utils import calculate as calculate_mcd
 
 
-METRICS = ("PESQ", "ESTOI", "SDR", "LSD", "MCD", "VISQOL")
+METRICS = ("PESQ", "ESTOI", "SDR", "LSD", "MCD")
 
 if "VISQOL" in METRICS:
     from visqol import visqol_lib_py
@@ -159,7 +159,7 @@ def sdr_metric(ref, inf):
     else:
         assert ref.ndim == 2, ref.shape
     num_src, _ = ref.shape
-    sdr, sir, sar, perm = bss_eval_sources(ref, inf, compute_permutation=True)
+    sdr, sir, sar, perm = fast_bss_eval.bss_eval_sources(ref, inf, compute_permutation=True)
     return float(np.mean(sdr))
 
 

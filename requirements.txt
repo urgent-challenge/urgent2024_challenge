@@ -13,7 +13,7 @@ webrtcvad
 
 # for calculating intrusive SE metrics
 fastdtw
-mir_eval
+fast_bss_eval
 pesq
 pysptk
 pystoi
@@ -32,4 +32,3 @@ openai-whisper
 
 # for SpeechBERTScore metric
 git+https://github.com/Takaaki-Saeki/DiscreteSpeechMetrics.git
-
