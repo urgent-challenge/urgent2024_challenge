@@ -136,7 +136,14 @@ def main(args):
     used_rir_dic = {fs: {} for fs in rir_dic.keys()}
 
     f = open(Path(args.log_dir) / "meta.tsv", "w")
-    headers = ["id", "noisy_path", "speech_uid", "speech_sid", "clean_path", "noise_uid"]
+    headers = [
+        "id",
+        "noisy_path",
+        "speech_uid",
+        "speech_sid",
+        "clean_path",
+        "noise_uid",
+    ]
     if args.store_noise:
         headers.append("noise_path")
     headers += ["snr_dB", "rir_uid", "augmentation", "fs", "length", "text"]
@@ -185,7 +192,7 @@ def main(args):
                     force_1ch=True,
                 )
                 count += 1
-                filename = f"fileid_{count}.wav"
+                filename = f"fileid_{count}.{args.out_format}"
                 lst = [
                     f"fileid_{count}",
                     str(outdir / "noisy" / filename),
@@ -348,6 +355,9 @@ def get_parser(parser=None):
         help="Output directory for storing processed audio files",
     )
     group.add_argument(
+        "--out_format", type=str, default="flac", help="Output audio format"
+    )
+    group.add_argument(
         "--repeat_per_utt",
         type=int,
         default=1,
@@ -477,6 +487,8 @@ if __name__ == "__main__":
         for q in cmq:
             assert 0.0 <= q <= 1.0, q
     assert min(args.clipping_max_quantile) > max(args.clipping_min_quantile)
+
+    assert args.out_format.startswith("."), args.out_format
 
     outdir = Path(args.output_dir)
     (outdir / "clean").mkdir(parents=True, exist_ok=True)
