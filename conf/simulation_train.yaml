@@ -1,20 +1,20 @@
 speech_scps:
-- dns5_clean_read_speech_resampled_filtered_train.scp
-- libritts_resampled_train.scp
-- vctk_train.scp
-- commonvoice_11.0_en_resampled_filtered_train.scp
+- data/tmp/dns5_clean_read_speech_resampled_filtered_train.scp
+- data/tmp/libritts_resampled_train.scp
+- data/tmp/vctk_train.scp
+- data/tmp/commonvoice_11.0_en_resampled_filtered_train.scp
 
 speech_utt2spk:
-- dns5_clean_read_speech_resampled_filtered_train.utt2spk
-- libritts_resampled_train.utt2spk
-- vctk_train.utt2spk
-- commonvoice_11.0_en_resampled_filtered_train.utt2spk
+- data/tmp/dns5_clean_read_speech_resampled_filtered_train.utt2spk
+- data/tmp/libritts_resampled_train.utt2spk
+- data/tmp/vctk_train.utt2spk
+- data/tmp/commonvoice_11.0_en_resampled_filtered_train.utt2spk
 
 speech_text:
-- dns5_clean_read_speech_resampled_filtered_train.text
-- libritts_resampled_train.text
-- vctk_train.text
-- commonvoice_11.0_en_resampled_filtered_train.text
+- data/tmp/dns5_clean_read_speech_resampled_filtered_train.text
+- data/tmp/libritts_resampled_train.text
+- data/tmp/vctk_train.text
+- data/tmp/commonvoice_11.0_en_resampled_filtered_train.text
 
 log_dir: simulation_train/log
 output_dir: simulation_train
@@ -22,16 +22,15 @@ repeat_per_utt: 1
 seed: 0
 
 noise_scps:
-- dns5_noise_resampled_train.scp
-- wham_noise_train.scp
-#- epic_sounds_noise_resampled_train.scp
+- data/tmp/dns5_noise_resampled_train.scp
+- data/tmp/wham_noise_train.scp
 snr_low_bound: -5.0
 snr_high_bound: 20.0
 reuse_noise: true
 store_noise: false
 
 rir_scps:
-- dns5_rirs.scp
+- data/tmp/dns5_rirs.scp
 prob_reverberation: 0.5
 reuse_rir: true
 

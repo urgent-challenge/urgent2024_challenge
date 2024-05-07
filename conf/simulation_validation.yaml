@@ -1,20 +1,20 @@
 speech_scps:
-- dns5_clean_read_speech_resampled_filtered_validation.scp
-- commonvoice_11.0_en_resampled_filtered_validation.scp
-- libritts_resampled_validation.scp
-- vctk_validation.scp
+- data/tmp/dns5_clean_read_speech_resampled_filtered_validation.scp
+- data/tmp/commonvoice_11.0_en_resampled_filtered_validation.scp
+- data/tmp/libritts_resampled_validation.scp
+- data/tmp/vctk_validation.scp
 
 speech_utt2spk:
-- dns5_clean_read_speech_resampled_filtered_validation.utt2spk
-- commonvoice_11.0_en_resampled_filtered_validation.utt2spk
-- libritts_resampled_validation.utt2spk
-- vctk_validation.utt2spk
+- data/tmp/dns5_clean_read_speech_resampled_filtered_validation.utt2spk
+- data/tmp/commonvoice_11.0_en_resampled_filtered_validation.utt2spk
+- data/tmp/libritts_resampled_validation.utt2spk
+- data/tmp/vctk_validation.utt2spk
 
 speech_text:
-- dns5_clean_read_speech_resampled_filtered_validation.text
-- commonvoice_11.0_en_resampled_filtered_validation.text
-- libritts_resampled_validation.text
-- vctk_validation.text
+- data/tmp/dns5_clean_read_speech_resampled_filtered_validation.text
+- data/tmp/commonvoice_11.0_en_resampled_filtered_validation.text
+- data/tmp/libritts_resampled_validation.text
+- data/tmp/vctk_validation.text
 
 log_dir: simulation_validation/log
 output_dir: simulation_validation
@@ -22,15 +22,15 @@ repeat_per_utt: 1
 seed: 0
 
 noise_scps:
-- dns5_noise_resampled_validation.scp
-- wham_noise_validation.scp
+- data/tmp/dns5_noise_resampled_validation.scp
+- data/tmp/wham_noise_validation.scp
 snr_low_bound: -5.0
 snr_high_bound: 20.0
 reuse_noise: true
 store_noise: false
 
 rir_scps:
-- dns5_rirs.scp
+- data/tmp/dns5_rirs.scp
 prob_reverberation: 0.5
 reuse_rir: false
 

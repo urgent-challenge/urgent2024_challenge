@@ -166,6 +166,11 @@ awk '{print $3}' dns5_rirs.scp > "${output_dir}/rir_train.scp"
 ##########################################
 # Data simulation for the validation set
 ##########################################
+mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
+if [ $USE_EPIC_SOUNDS -eq 1 ]; then
+    mv epic_sounds_noise_resampled_validation.scp "${output_dir}/tmp/"
+fi
+
 # Note: remember to modify placeholders in conf/simulation_validation.yaml before simulation.
 mkdir -p simulation_validation/log
 if [ ! -e "${output_dir}/tmp/simulation_validation.done" ]; then
@@ -178,11 +183,6 @@ if [ ! -e "${output_dir}/tmp/simulation_validation.done" ]; then
         --chunksize 200
 fi
 touch "${output_dir}/tmp/simulation_validation.done"
-
-mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
-if [ $USE_EPIC_SOUNDS -eq 1 ]; then
-    mv epic_sounds_noise_resampled_validation.scp "${output_dir}/tmp/"
-fi
 
 mkdir -p "${output_dir}"/validation
 awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="noisy_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/wav.scp 
