@@ -35,7 +35,6 @@ for blob_name in ${BLOB_NAMES[@]}; do
     mkdir -p "${output_dir}/$(dirname $blob_name)"
 done
 # parallel download
-mkdir -p "${output_dir}/noise_fullband"
 url="https://dnschallengepublic.blob.core.windows.net/dns5archive/V5_training_dataset"
 echo noise_fullband/datasets_fullband.noise_fullband.audioset_00{0..6}.tar.bz2 \
     | tr " " "\n" \

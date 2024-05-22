@@ -69,8 +69,9 @@ def sptk_extract(
 
 
 def _get_best_mcep_params(fs: int) -> Tuple[int, float]:
+    # https://sp-nitech.github.io/sptk/latest/main/mgcep.html#_CPPv4N4sptk19MelCepstralAnalysisE
     if fs == 8000:
-        return 13, 0.41
+        return 13, 0.31
     elif fs == 16000:
         return 23, 0.42
     elif fs == 22050:
@@ -78,7 +79,7 @@ def _get_best_mcep_params(fs: int) -> Tuple[int, float]:
     elif fs == 24000:
         return 34, 0.46
     elif fs == 32000:
-        return 36, 0.49
+        return 36, 0.50
     elif fs == 44100:
         return 39, 0.53
     elif fs == 48000:
