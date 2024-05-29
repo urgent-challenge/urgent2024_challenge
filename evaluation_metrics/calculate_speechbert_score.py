@@ -27,7 +27,7 @@ class SpeechBERTScore:
 
     def __init__(self, device="cpu"):
         self.speech_bert_score = SBS(
-            sr=TARGET_FS, model_type="wavlm-large", layer=14, use_gpu="cuda" in device
+            sr=TARGET_FS, model_type="hubert-base", layer=8, use_gpu="cuda" in device
         )
 
     def __call__(self, reference: np.ndarray, sample: np.ndarray) -> float:
@@ -40,7 +40,7 @@ def speech_bert_score_metric(model, ref, inf, fs=16000):
 
     Args:
         model (torch.nn.Module): SpeechBERTScore model
-            Please use the model with model_type="wavlm-large" and layer=14
+            Please use the model with model_type="hubert-base" and layer=8
             to get comparable results.
         ref (np.ndarray): reference signal (time,)
         inf (np.ndarray): enhanced signal (time,)
