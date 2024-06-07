@@ -48,7 +48,7 @@ if [ ! -e "${output_dir}/tmp/dns5_librivox.done" ]; then
         awk '{print $1" "$2}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2category
         cp "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp "${output_dir}"/tmp/dns5_librivox_${subset}/spk1.scp
-        mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+        # mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
     done
 fi
 touch "${output_dir}/tmp/dns5_librivox.done"
@@ -65,7 +65,7 @@ if [ ! -e "${output_dir}/tmp/commonvoice.done" ]; then
         awk '{print $1" "$2}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2category
         cp "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk1.scp
-        mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+        # mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
     done
 fi
 touch "${output_dir}/tmp/commonvoice.done"
@@ -81,7 +81,7 @@ if [ ! -e "${output_dir}/tmp/libritts.done" ]; then
         awk '{print $1" "$2}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2category
         cp "${output_dir}"/tmp/libritts_${subset}/wav.scp "${output_dir}"/tmp/libritts_${subset}/spk1.scp
-        mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
+        # mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
     done
 fi
 touch "${output_dir}/tmp/libritts.done"
@@ -97,7 +97,7 @@ if [ ! -e "${output_dir}/tmp/vctk.done" ]; then
         awk '{print $1" "$2}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2category
         cp "${output_dir}"/tmp/vctk_${subset}/wav.scp "${output_dir}"/tmp/vctk_${subset}/spk1.scp
-        mv vctk_${subset}.* "${output_dir}/tmp/"
+        # mv vctk_${subset}.* "${output_dir}/tmp/"
     done
 fi
 touch "${output_dir}/tmp/vctk.done"
@@ -113,7 +113,7 @@ if [ ! -e "${output_dir}/tmp/wsj.done" ]; then
     awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
     awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
     cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
-    mv wsj_${subset}.* "${output_dir}/tmp/"
+    # mv wsj_${subset}.* "${output_dir}/tmp/"
     done
 fi
 touch "${output_dir}/tmp/wsj.done"

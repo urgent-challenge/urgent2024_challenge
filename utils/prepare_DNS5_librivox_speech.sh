@@ -111,8 +111,8 @@ head -n 90 tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.spk2utt > tmp/dn
 tail -n +91 tmp/dns5_clean_read_speech_resampled_filtered_dnsmos.spk2utt > tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_validation.spk2utt > dns5_clean_read_speech_resampled_filtered_validation.utt2spk
 utils/spk2utt_to_utt2spk.pl tmp/dns5_clean_read_speech_resampled_filtered_train.spk2utt > dns5_clean_read_speech_resampled_filtered_train.utt2spk
-utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_validation.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_validation.scp
-utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_train.utt2spk tmp/dns5_clean_read_speech_resampled_filtered.scp > dns5_clean_read_speech_resampled_filtered_train.scp
+utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_validation.utt2spk tmp/dns5_clean_read_speech_resampled.scp > dns5_clean_read_speech_resampled_filtered_validation.scp
+utils/filter_scp.pl dns5_clean_read_speech_resampled_filtered_train.utt2spk tmp/dns5_clean_read_speech_resampled.scp > dns5_clean_read_speech_resampled_filtered_train.scp
 
 awk '{print($1" <not-available>")}' dns5_clean_read_speech_resampled_filtered_train.scp > dns5_clean_read_speech_resampled_filtered_train.text
 awk '{print($1" <not-available>")}' dns5_clean_read_speech_resampled_filtered_validation.scp > dns5_clean_read_speech_resampled_filtered_validation.text
