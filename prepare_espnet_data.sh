@@ -48,8 +48,9 @@ if [ ! -e "${output_dir}/tmp/dns5_librivox.done" ]; then
         awk '{print $1" "$2}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' dns5_clean_read_speech_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/dns5_librivox_${subset}/utt2category
         cp "${output_dir}"/tmp/dns5_librivox_${subset}/wav.scp "${output_dir}"/tmp/dns5_librivox_${subset}/spk1.scp
-        # mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+        mv dns5_clean_read_speech_resampled_filtered_${subset}.* "${output_dir}/tmp/"
     done
+    mv dns5_clean_read_speech_resampled_filtered_validation.* "${output_dir}/tmp/"
 fi
 touch "${output_dir}/tmp/dns5_librivox.done"
 
@@ -65,8 +66,9 @@ if [ ! -e "${output_dir}/tmp/commonvoice.done" ]; then
         awk '{print $1" "$2}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' commonvoice_11.0_en_resampled_filtered_${subset}.scp > "${output_dir}"/tmp/commonvoice_11_en_${subset}/utt2category
         cp "${output_dir}"/tmp/commonvoice_11_en_${subset}/wav.scp "${output_dir}"/tmp/commonvoice_11_en_${subset}/spk1.scp
-        # mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
+        mv commonvoice_11.0_en_resampled_filtered_${subset}.* "${output_dir}/tmp/"
     done
+    mv commonvoice_11.0_en_resampled_filtered_validation.* "${output_dir}/tmp/"
 fi
 touch "${output_dir}/tmp/commonvoice.done"
 
@@ -81,8 +83,9 @@ if [ ! -e "${output_dir}/tmp/libritts.done" ]; then
         awk '{print $1" "$2}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' libritts_resampled_${subset}.scp > "${output_dir}"/tmp/libritts_${subset}/utt2category
         cp "${output_dir}"/tmp/libritts_${subset}/wav.scp "${output_dir}"/tmp/libritts_${subset}/spk1.scp
-        # mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
+        mv libritts_resampled_${subset}.* "${output_dir}/tmp/"
     done
+    mv libritts_resampled_validation.* "${output_dir}/tmp/"
 fi
 touch "${output_dir}/tmp/libritts.done"
 
@@ -97,24 +100,26 @@ if [ ! -e "${output_dir}/tmp/vctk.done" ]; then
         awk '{print $1" "$2}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2fs
         awk '{print $1" 1ch_"$2"Hz"}' vctk_${subset}.scp > "${output_dir}"/tmp/vctk_${subset}/utt2category
         cp "${output_dir}"/tmp/vctk_${subset}/wav.scp "${output_dir}"/tmp/vctk_${subset}/spk1.scp
-        # mv vctk_${subset}.* "${output_dir}/tmp/"
+        mv vctk_${subset}.* "${output_dir}/tmp/"
     done
+    mv vctk_validation.* "${output_dir}/tmp/"
 fi
 touch "${output_dir}/tmp/vctk.done"
 
 if [ ! -e "${output_dir}/tmp/wsj.done" ]; then
     ./utils/prepare_WSJ_speech.sh
     for subset in train; do
-    mkdir -p "${output_dir}/tmp/wsj_${subset}"
-    awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
-    cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
-    cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
-    utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
-    awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
-    awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
-    cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
-    # mv wsj_${subset}.* "${output_dir}/tmp/"
+        mkdir -p "${output_dir}/tmp/wsj_${subset}"
+        awk '{print $1" "$3}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/wav.scp
+        cp wsj_${subset}.utt2spk "${output_dir}"/tmp/wsj_${subset}/utt2spk
+        cp wsj_${subset}.text "${output_dir}"/tmp/wsj_${subset}/text
+        utils/utt2spk_to_spk2utt.pl "${output_dir}"/tmp/wsj_${subset}/utt2spk > "${output_dir}"/tmp/wsj_${subset}/spk2utt
+        awk '{print $1" "$2}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2fs
+        awk '{print $1" 1ch_"$2"Hz"}' wsj_${subset}.scp > "${output_dir}"/tmp/wsj_${subset}/utt2category
+        cp "${output_dir}"/tmp/wsj_${subset}/wav.scp "${output_dir}"/tmp/wsj_${subset}/spk1.scp
+        mv wsj_${subset}.* "${output_dir}/tmp/"
     done
+    mv wsj_validation.* "${output_dir}/tmp/"
 fi
 touch "${output_dir}/tmp/wsj.done"
 
@@ -143,18 +148,20 @@ if [ ! -e "${output_dir}/tmp/wham_noise.done" ]; then
 fi
 touch "${output_dir}/tmp/wham_noise.done"
 
-# Combine all data for the training set
-cat dns5_noise_resampled_train.scp wham_noise_train.scp > "${output_dir}/noise_train.scp"
-mv dns5_noise_resampled_train.scp wham_noise_train.scp "${output_dir}/tmp/"
+if [ ! -e "${output_dir}/tmp/noise_rir.done" ]; then
+    # Combine all data for the training set
+    cat dns5_noise_resampled_train.scp wham_noise_train.scp > "${output_dir}/noise_train.scp"
+    mv dns5_noise_resampled_train.scp wham_noise_train.scp "${output_dir}/tmp/"
 
-# Combine all the rir data for the training set
-cat dns5_rirs.scp > "${output_dir}/rir_train.scp"
+    # Combine all the rir data for the training set
+    cat dns5_rirs.scp > "${output_dir}/rir_train.scp"
+    mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
+fi
+touch "${output_dir}/tmp/noise_rir.done"
 
 ##########################################
 # Data simulation for the validation set
 ##########################################
-mv dns5_noise_resampled_validation.scp wham_noise_validation.scp dns5_rirs.scp "${output_dir}/tmp/"
-
 # Note: remember to modify placeholders in conf/simulation_validation.yaml before simulation.
 mkdir -p simulation_validation/log
 if [ ! -e "${output_dir}/tmp/simulation_validation.done" ]; then
