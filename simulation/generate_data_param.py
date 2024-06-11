@@ -488,8 +488,6 @@ if __name__ == "__main__":
             assert 0.0 <= q <= 1.0, q
     assert min(args.clipping_max_quantile) > max(args.clipping_min_quantile)
 
-    assert args.out_format.startswith("."), args.out_format
-
     outdir = Path(args.output_dir)
     (outdir / "clean").mkdir(parents=True, exist_ok=True)
     (outdir / "noisy").mkdir(parents=True, exist_ok=True)
