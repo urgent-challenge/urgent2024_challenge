@@ -184,6 +184,31 @@ awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="clean_path") {n=i; break}} next}
 awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="fs") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_validation/log/meta.tsv | sort -u > "${output_dir}"/validation/utt2fs
 awk '{print($1" 1ch_"$2"Hz")}' "${output_dir}"/validation/utt2fs > "${output_dir}"/validation/utt2category
 
+
+#######################################################
+# Data simulation for a fixed training set (optional)
+#######################################################
+# mkdir -p simulation_train/log
+# if [ ! -e "${output_dir}/tmp/simulation_train.done" ]; then
+#     python simulation/generate_data_param.py --config conf/simulation_train.yaml
+#     # It takes ~30 minutes to finish simulation with nj=8
+#     OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
+#         --config conf/simulation_train.yaml \
+#         --meta_tsv simulation_train/log/meta.tsv \
+#         --nj 8 \
+#         --chunksize 200
+# fi
+# touch "${output_dir}/tmp/simulation_train.done"
+
+# mkdir -p "${output_dir}"/train
+# awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="noisy_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_train/log/meta.tsv | sort -u > "${output_dir}"/train/wav.scp 
+# awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="speech_sid") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_train/log/meta.tsv | sort -u > "${output_dir}"/train/utt2spk
+# utils/utt2spk_to_spk2utt.pl "${output_dir}"/train/utt2spk > "${output_dir}"/train/spk2utt
+# awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="text") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_train/log/meta.tsv | sort -u > "${output_dir}"/train/text
+# awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="clean_path") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_train/log/meta.tsv | sort -u > "${output_dir}"/train/spk1.scp 
+# awk -F"\t" 'NR==1{for(i=1; i<=NF; i++) {if($i=="fs") {n=i; break}} next} NR>1{print($1" "$n)}' simulation_train/log/meta.tsv | sort -u > "${output_dir}"/train/utt2fs
+# awk '{print($1" 1ch_"$2"Hz")}' "${output_dir}"/train/utt2fs > "${output_dir}"/train/utt2category
+
 #--------------------------------
 # Output files:
 # -------------------------------
