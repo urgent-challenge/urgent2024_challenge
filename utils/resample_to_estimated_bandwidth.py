@@ -27,7 +27,7 @@ def resample_to_estimated_bandwidth(
     else:
         est_fs = sampling_rates[-1]
     if est_fs == fs:
-        return audio_path, fs
+        return uid, audio_path, fs
 
     audio = soxr.resample(audio, fs, est_fs)
 
@@ -35,7 +35,7 @@ def resample_to_estimated_bandwidth(
     outfile = Path(outdir) / subdir / (uid + ".wav")
     outfile.parent.mkdir(parents=True, exist_ok=True)
     sf.write(str(outfile), audio, est_fs)
-    return outfile, est_fs
+    return uid, outfile, est_fs
 
 
 if __name__ == "__main__":
@@ -105,6 +105,5 @@ if __name__ == "__main__":
 
     Path(args.out_scpfile).parent.mkdir(parents=True, exist_ok=True)
     with open(args.out_scpfile, "w") as f:
-        for audio_path, fs in ret:
-            uid = Path(audio_path).stem
+        for uid, audio_path, fs in ret:
             f.write(f"{uid} {fs} {audio_path}\n")
