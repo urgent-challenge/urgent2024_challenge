@@ -1,18 +1,18 @@
 import numpy as np
 
 
-def estimate_early_rir(rir_sample, early_rir_ms: float = 50.0, fs: int = 48000):
+def estimate_early_rir(rir_sample, early_rir_sec: float = 0.05, fs: int = 48000):
     """Estimate the part of RIR corresponding to the early reflections.
 
     Args:
         rir_sample (np.ndarray): a single room impulse response (RIR) (Channel, Time)
-        early_rir_ms (float): the duration in milliseconds that we count as early RIR
+        early_rir_sec (float): the duration in seconds that we count as early RIR
         fs (int): sampling frequency in Hz
     Returns:
         early_rir_sample (np.ndarray): estimated RIR (Channel, Time)
     """
     rir_start_sample = np.array([get_rir_start_sample(h) for h in rir_sample])
-    early_rir_samples = int(early_rir_ms * fs)
+    early_rir_samples = int(early_rir_sec * fs)
     rir_stop_sample = rir_start_sample + early_rir_samples
     rir_early = rir_sample.copy()
     for i in range(rir_sample.shape[0]):
