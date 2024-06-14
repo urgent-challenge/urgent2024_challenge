@@ -1,6 +1,10 @@
 # urgent2024_challenge
 Official data preparation scripts for the URGENT 2024 Challenge
 
+## Notes
+
+❗️❗️[**2024-06-14**] we have fixed a bug related to the simulation scripts ([#7](https://github.com/urgent-challenge/urgent2024_challenge/pull/7)). If you have already simulated the dataset using [`simulation/simulate_data_from_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/simulate_data_from_param.py) or [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh), you will need to regenrate the audios using the latest codebase. (No need to rerun [`simulation/generate_data_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/generate_data_param.py) if you have already done so.)
+
 ## Requirements
 
 - `>8` Cores
