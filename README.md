@@ -19,7 +19,6 @@ Official data preparation scripts for the URGENT 2024 Challenge
   - Noise
     - DNS5 noise (original 58 GB + resampled 35 GB): 93 GB
     - WHAM! noise (48 kHz): 76 GB
-    - [optional] EPIC-Sounds noise (original video 1.3 TB + original audio 33 GB + resampled 370 GB): 1.7 TB
   - RIR
     - DNS5 RIRs (48 kHz): 6 GB
   - Others
@@ -34,7 +33,7 @@ With minimum specs, expects the whole process to take YYY hours.
     git submodule update --init --recursive
     ```
 
-1. Install environmemnt. Python 3.10 and Torch 2.0.1 are recommended.
+1. Install environmemnt. Python 3.10 and Torch 2.0.1+ are recommended.
    With Anaconda, just run
 
     ```bash
