@@ -49,6 +49,16 @@ With minimum specs, expects the whole process to take YYY hours.
     conda activate urgent
     ```
 
+    > In case of the following error
+    > ```
+    >   ERROR: Failed building wheel for pypesq
+    > ERROR: Could not build wheels for pypesq, which is required to install pyproject.toml-based projects
+    > ```
+    > you could manually install [`pypesq`](https://github.com/vBaiCai/python-pesq) in advance via:
+    > ```bash
+    > python -m pip install https://github.com/vBaiCai/python-pesq/archive/master.zip
+    > ```
+
 2. Download Commonvoice dataset v11 from https://commonvoice.mozilla.org/en/datasets
 
     a. Select `Common Voice Corpus 11.0`
