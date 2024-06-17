@@ -1,6 +1,18 @@
 # urgent2024_challenge
 Official data preparation scripts for the URGENT 2024 Challenge
 
+## Notes
+
+❗️❗️[**2024-06-14**] we have fixed a bug related to the resampling scripts ([#8](https://github.com/urgent-challenge/urgent2024_challenge/pull/9)). If you have already prepared the DNS5 speech dataset using [`utils/prepare_DNS5_librivox_speech.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/utils/prepare_DNS5_librivox_speech.sh) or [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh), you will need to update the codebase and regenerate the DNS5 speech data using the latest codebase.
+* Before rerunning, some itermediate files need to be removed:
+    > ```bash
+    > rm tmp/dns5_clean_read_speech*
+    > rm -r dns5_fullband/Track1_Headset/resampled/
+    > rm -r data/tmp/dns5_librivox_train
+    > ```
+
+❗️❗️[**2024-06-14**] we have fixed a bug related to the simulation scripts ([#7](https://github.com/urgent-challenge/urgent2024_challenge/pull/7)). If you have already simulated the dataset using [`simulation/simulate_data_from_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/simulate_data_from_param.py) or [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh), you will need to regenerate the audios using the latest codebase. (No need to rerun [`simulation/generate_data_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/generate_data_param.py) if you have already done so.)
+
 ## Requirements
 
 - `>8` Cores
@@ -15,7 +27,6 @@ Official data preparation scripts for the URGENT 2024 Challenge
   - Noise
     - DNS5 noise (original 58 GB + resampled 35 GB): 93 GB
     - WHAM! noise (48 kHz): 76 GB
-    - [optional] EPIC-Sounds noise (original video 1.3 TB + original audio 33 GB + resampled 370 GB): 1.7 TB
   - RIR
     - DNS5 RIRs (48 kHz): 6 GB
   - Others
@@ -30,7 +41,7 @@ With minimum specs, expects the whole process to take YYY hours.
     git submodule update --init --recursive
     ```
 
-1. Install environmemnt. Python 3.10 and Torch 2.0.1 are recommended.
+1. Install environmemnt. Python 3.10 and Torch 2.0.1+ are recommended.
    With Anaconda, just run
 
     ```bash
