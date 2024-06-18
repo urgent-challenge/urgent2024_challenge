@@ -3,18 +3,21 @@ speech_scps:
 - data/tmp/libritts_resampled_train.scp
 - data/tmp/vctk_train.scp
 - data/tmp/commonvoice_11.0_en_resampled_filtered_train.scp
+- data/tmp/wsj_train.scp
 
 speech_utt2spk:
 - data/tmp/dns5_clean_read_speech_resampled_filtered_train.utt2spk
 - data/tmp/libritts_resampled_train.utt2spk
 - data/tmp/vctk_train.utt2spk
 - data/tmp/commonvoice_11.0_en_resampled_filtered_train.utt2spk
+- data/tmp/wsj_train.utt2spk
 
 speech_text:
 - data/tmp/dns5_clean_read_speech_resampled_filtered_train.text
 - data/tmp/libritts_resampled_train.text
 - data/tmp/vctk_train.text
 - data/tmp/commonvoice_11.0_en_resampled_filtered_train.text
+- data/tmp/wsj_train.text
 
 log_dir: simulation_train/log
 output_dir: simulation_train
