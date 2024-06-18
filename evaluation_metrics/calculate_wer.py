@@ -125,8 +125,10 @@ def main(args):
     model = Speech2Text.from_pretrained(
         model_tag="espnet/owsm_v3.1_ebf",
         device=args.device,
-        category_sym="<eng>",
+        lang_sym="<eng>",
+        task_sym="<asr>",
         beam_size=BEAMSIZE,
+        predict_time=False,
     )
     textcleaner = TextCleaner("whisper_en")
     ret = []

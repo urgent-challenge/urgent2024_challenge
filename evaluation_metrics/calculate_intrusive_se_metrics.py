@@ -159,7 +159,9 @@ def sdr_metric(ref, inf):
     else:
         assert ref.ndim == 2, ref.shape
     num_src, _ = ref.shape
-    sdr, sir, sar = fast_bss_eval.bss_eval_sources(ref, inf, compute_permutation=False)
+    sdr, sir, sar = fast_bss_eval.bss_eval_sources(
+        ref, inf, compute_permutation=False, clamp_db=50.0
+    )
     return float(np.mean(sdr))
 
 

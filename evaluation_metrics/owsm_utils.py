@@ -29,14 +29,14 @@ def owsm_predict(
     Returns:
         text (str): predicted text
     """
-    model.task_id = model.converter.token2id["<asr>"]
+    task_sym = "<asr>"
     model.beam_search.beam_size = int(beam_size)
 
     assert fs == TARGET_FS, (fs, TARGET_FS)
 
     # Detect language using the first 30s of speech
     if src_lang == "none":
-        from espnet2.bin.s2t_inference_language import Speech2Text as Speech2Lang
+        from espnet2.bin.s2t_inference_language import Speech2Language as Speech2Lang
 
         speech2lang = Speech2Lang.from_pretrained(
             model_tag="espnet/owsm_v3.1_ebf",
@@ -46,7 +46,7 @@ def owsm_predict(
         src_lang = speech2lang(
             librosa.util.fix_length(speech, size=(TARGET_FS * CHUNK_SIZE))
         )[0][0].strip()[1:-1]
-    model.category_id = model.converter.token2id[f"<{src_lang}>"]
+    lang_sym = f"<{src_lang}>"
 
     # ASR or ST
     if long_form:  # speech will be padded in decode_long()
@@ -54,12 +54,11 @@ def owsm_predict(
             model.maxlenratio = -300
             utts = model.decode_long(
                 speech,
-                segment_sec=CHUNK_SIZE,
-                fs=TARGET_FS,
                 condition_on_prev_text=False,
                 init_text=text_prev,
-                start_time="<0.00>",
-                end_time_threshold="<29.50>",
+                end_time_threshold="<29.00>",
+                lang_sym=lang_sym,
+                task_sym=task_sym,
             )
 
             text = []
@@ -81,7 +80,7 @@ def owsm_predict(
     model.maxlenratio = -min(300, int((len(speech) / TARGET_FS) * 10))
 
     speech = librosa.util.fix_length(speech, size=(TARGET_FS * CHUNK_SIZE))
-    text = model(speech, text_prev)[0][3]
+    text = model(speech, text_prev, lang_sym=lang_sym, task_sym=task_sym)[0][-2]
 
     return text
 

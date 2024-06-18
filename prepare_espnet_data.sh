@@ -191,7 +191,7 @@ awk '{print($1" 1ch_"$2"Hz")}' "${output_dir}"/validation/utt2fs > "${output_dir
 # mkdir -p simulation_train/log
 # if [ ! -e "${output_dir}/tmp/simulation_train.done" ]; then
 #     python simulation/generate_data_param.py --config conf/simulation_train.yaml
-#     # It takes ~30 minutes to finish simulation with nj=8
+#     # It takes ~1.5 hours to finish simulation with nj=8
 #     OMP_NUM_THREADS=1 python simulation/simulate_data_from_param.py \
 #         --config conf/simulation_train.yaml \
 #         --meta_tsv simulation_train/log/meta.tsv \
