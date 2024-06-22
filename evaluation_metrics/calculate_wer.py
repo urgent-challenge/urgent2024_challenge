@@ -151,6 +151,8 @@ def main(args):
                 if metric == "WER":
                     dic = {"delete": [], "insert": [], "replace": [], "equal": []}
                     for uid, score in ret:
+                        if len(score[metric]) == 0:
+                            continue
                         for op in dic.keys():
                             dic[op].append(score[metric][op])
                     dic = {op: sum(count) for op, count in dic.items()}

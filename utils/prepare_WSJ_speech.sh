@@ -84,6 +84,8 @@ mkdir -p tmp
 sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' -e 's#:wsj0/# wsj0/#g' "${output_dir}/wsj1/13-34.1/wsj1/doc/indices/si_tr_s.ndx" "${output_dir}/wsj0/11-13.1/wsj0/doc/indices/train/tr_s_wv1.ndx" | \
     awk -v out="${output_dir}" '{if(substr($1,1,1)!=";"){n=split($2,a,"/"); split(a[n],b,"."); split($1,c,"_"); str=c[1]"-"c[2]"."c[3]; if(substr($2,length($2)-3,4)!=".wv1"){$2=$2".wav";} print(b[1]" "out"/"a[1]"_wav/"str"/"$2)}}' | \
     sed -e 's#\.wv1$#.wav#g' | grep -v -i 11-2.1/wsj0/si_tr_s/401 | sort -u > tmp/wsj_train_si284.scp
+# remove samples with a transcript
+sed -i -e '/46uc030b /Id' -e '/47hc0418/Id' tmp/wsj_train_si284.scp
 
 sed -e 's#:wsj1/# wsj1/#g' -e 's#: /wsj1/# wsj1/#g' "${output_dir}/wsj1/13-34.1/wsj1/doc/indices/h1_p0.ndx" | \
     awk -v out="${output_dir}" '{if(substr($1,1,1)!=";"){n=split($2,a,"/"); split(a[n],b,"."); split($1,c,"_"); str=c[1]"-"c[2]"."c[3]; if(substr($2,length($2)-3,4)!=".wv1"){$2=$2".wav";} print(b[1]" "out"/"a[1]"_wav/"str"/"$2)}}' | \

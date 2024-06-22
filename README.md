@@ -3,6 +3,12 @@ Official data preparation scripts for the URGENT 2024 Challenge
 
 ## Notes
 
+❗️❗️[**2024-06-22**] we have updated [utils/prepare_WSJ_speech.sh](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/utils/prepare_WSJ_speech.sh) to remove two WSJ training samples (46uc030b and 47hc0418) which are actually non-speech. They may trigger an error when generating the simulation config using [`simulation/generate_data_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/generate_data_param.py).
+* If you have already prepared the WSJ data, all you need to do is to remove two lines from the generated `wsj1_train.*` files:
+    > ```bash
+    > sed -i -e '/46uc030b/d' -e '/47hc0418/d' data/tmp/wsj_train.*
+    > ```
+
 ❗️❗️[**2024-06-18**] we have updated [conf/simulation_train.yaml](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/conf/simulation_train.yaml) and [conf/simulation_validation.yaml](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/conf/simulation_validation.yaml) to include the WSJ data for simulation. This is to encourage participants who have the WSJ data license to use the data for generating the training and validation data. If you do not have the WSJ data license, you can ignore this update.
 
 ❕❕[**2024-06-18**] we have updated two evaluation-related scripts in `evaluation_metrics/` folder: [`calculate_intrusive_se_metrics.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/evaluation_metrics/calculate_intrusive_se_metrics.py) (for handling infinite SDR values) and [`calculate_wer.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/evaluation_metrics/calculate_wer.py) (for compatibility with the latest [Speech2Text interface](https://github.com/espnet/espnet/blob/master/espnet2/bin/s2t_inference.py) in ESPnet). This will not impact the data preparation part, but you will need to update the codebase when evaluating the model performance.

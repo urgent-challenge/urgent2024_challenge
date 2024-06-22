@@ -48,6 +48,8 @@ def group_by_augmentation(meta):
     augmentation = meta["augmentation"]
     if augmentation.startswith("bandwidth_limitation"):
         return "bandwidth_limitation"
+    if augmentation.startswith("clipping"):
+        return "clipping"
     return augmentation
 
 
