@@ -21,6 +21,8 @@ def estimate_bandwidth(audios, threshold=-50.0, nfft=512, hop=256, sample_rate=1
     try:
         audio, fs = sf.read(audio_path)
     except:
+        # Some of the downloaded DNS5 speech audio files may be broken (extracted from
+        # dns5_fullband/Track1_Headset/read_speech.tgz.part*) according to our tests.
         print(f"Error: cannot open audio file '{audio_path}'. Skipping it", flush=True)
         return
     if audio.ndim > 1:
