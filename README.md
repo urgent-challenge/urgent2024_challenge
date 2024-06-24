@@ -3,6 +3,9 @@ Official data preparation scripts for the URGENT 2024 Challenge
 
 ## Notes
 
+❗️❗️ Please note that the default generated `data/speech_train` subset is only intended for **dynamic mixing (on-the-fly simulation)** in the ESPnet framework. It has the same content in `spk1.scp` (clean reference speech) and `wav.scp` (noisy speech) files to facilitate on-the-fly simulation of different distortions. So this subset must be used in conjunction with a dynamic mixing configuration (an unofficial example using dynamic mixing can be found at [here](https://github.com/Emrys365/espnet/blob/urgent2024/egs2/urgent24/enh1/conf/tuning/train_enh_bsrnn_large_noncausal_dynamic_mixing.yaml#L34-L64)).
+* To use a fixed simulation training set (without dynamic mixing), you could follow the [commented lines](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh#L188-L210) in the [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh) script to generate `data/train`.
+
 ❗️❗️[**2024-06-22**] we have updated [utils/prepare_WSJ_speech.sh](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/utils/prepare_WSJ_speech.sh) to remove two WSJ training samples (46uc030b and 47hc0418) which are actually non-speech. They may trigger an error when generating the simulation config using [`simulation/generate_data_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/generate_data_param.py).
 * If you have already prepared the WSJ data, all you need to do is to remove two lines from the generated `wsj1_train.*` files:
     > ```bash

@@ -123,7 +123,7 @@ if [ ! -e "${output_dir}/tmp/wsj.done" ]; then
 fi
 touch "${output_dir}/tmp/wsj.done"
 
-# Combine all data
+# Combine all data (to be used for dynamic mixing only)
 mkdir -p "${output_dir}/speech_train"
 if [ ! -e "${output_dir}/tmp/speech_train.done" ]; then
     utils/combine_data.sh --extra_files "utt2category utt2fs spk1.scp" --skip_fix true "${output_dir}"/speech_train \
