@@ -67,7 +67,8 @@ With minimum specs, expects the whole process to take YYY hours.
     >   ERROR: Failed building wheel for pypesq
     > ERROR: Could not build wheels for pypesq, which is required to install pyproject.toml-based projects
     > ```
-    > you could manually install [`pypesq`](https://github.com/vBaiCai/python-pesq) in advance via:
+    > you could manually install [`pypesq`](https://github.com/vBaiCai/python-pesq) in advance via: 
+    > (make sure you have `numpy` installed before trying this to avoid compilation errors)
     > ```bash
     > python -m pip install https://github.com/vBaiCai/python-pesq/archive/master.zip
     > ```
