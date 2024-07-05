@@ -1,5 +1,5 @@
 # urgent2024_challenge
-Official data preparation scripts for the URGENT 2024 Challenge
+Official data preparation scripts for the [URGENT 2024 Challenge](https://urgent-challenge.github.io/urgent2024/)
 
 ## Notes
 
@@ -11,6 +11,8 @@ Official data preparation scripts for the URGENT 2024 Challenge
     > ```bash
     > sed -i -e '/46uc030b/d' -e '/47hc0418/d' data/tmp/wsj_train.*
     > ```
+
+<details><summary>Expand to see all past updates before 2024-06-22</summary><div>
 
 ❗️❗️[**2024-06-18**] we have updated [conf/simulation_train.yaml](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/conf/simulation_train.yaml) and [conf/simulation_validation.yaml](https://github.com/urgent-challenge/urgent2024_challenge/tree/main/conf/simulation_validation.yaml) to include the WSJ data for simulation. This is to encourage participants who have the WSJ data license to use the data for generating the training and validation data. If you do not have the WSJ data license, you can ignore this update.
 
@@ -25,6 +27,8 @@ Official data preparation scripts for the URGENT 2024 Challenge
     > ```
 
 ❗️❗️[**2024-06-14**] we have fixed a bug related to the simulation scripts ([#7](https://github.com/urgent-challenge/urgent2024_challenge/pull/7)). If you have already simulated the dataset using [`simulation/simulate_data_from_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/simulate_data_from_param.py) or [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh), you will need to regenerate the audios using the latest codebase. (No need to rerun [`simulation/generate_data_param.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/simulation/generate_data_param.py) if you have already done so.)
+
+</div></details>
 
 ## Requirements
 
