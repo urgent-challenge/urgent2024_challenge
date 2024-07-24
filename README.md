@@ -34,9 +34,9 @@ Official data preparation scripts for the [URGENT 2024 Challenge](https://urgent
 
 - `>8` Cores
 - At least `1` GPU (4 or 8 GPUs are recommended for speedup in DNSMOS or other DNN-based metric calculation)
-- At least 1.2 TB of free disk space
+- At least 1.1 TB of free disk space
   - Speech
-    - DNS5 speech (original 131 GB + resampled 187 GB): 318 GB
+    - DNS5 speech (original 131 GB + resampled 94 GB): 225 GB
     - CommonVoice English speech (original mp3 82 GB + resampled 509 GB): 591 GB
     - LibriTTS (original 44 GB + resampled 7 GB): 51 GB
     - VCTK: 12 GB
