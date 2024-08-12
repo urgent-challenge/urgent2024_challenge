@@ -214,7 +214,7 @@ def filter_by_vad(utt_tup, vad_mode=2, threshold=0.3):
     elif fs == 44100:
         wav = librosa.resample(wav, orig_sr=fs, target_sr=48000)
         fs = 48000
-    vad_mask = compute_vad(wav, mode=2, fs=fs, strict=True)
+    vad_mask = compute_vad(wav, mode=vad_mode, fs=fs, strict=True)
     if vad_mask.mean() < threshold:
         return None
     return uid
