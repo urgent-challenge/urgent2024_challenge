@@ -19,7 +19,7 @@ Official data preparation scripts for the [URGENT 2024 Challenge](https://urgent
 ❕❕[**2024-06-18**] we have updated two evaluation-related scripts in `evaluation_metrics/` folder: [`calculate_intrusive_se_metrics.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/evaluation_metrics/calculate_intrusive_se_metrics.py) (for handling infinite SDR values) and [`calculate_wer.py`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/evaluation_metrics/calculate_wer.py) (for compatibility with the latest [Speech2Text interface](https://github.com/espnet/espnet/blob/master/espnet2/bin/s2t_inference.py) in ESPnet). This will not impact the data preparation part, but you will need to update the codebase when evaluating the model performance.
 
 ❗️❗️[**2024-06-14**] we have fixed a bug related to the resampling scripts ([#8](https://github.com/urgent-challenge/urgent2024_challenge/pull/9)). If you have already prepared the DNS5 speech dataset using [`utils/prepare_DNS5_librivox_speech.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/utils/prepare_DNS5_librivox_speech.sh) or [`prepare_espnet_data.sh`](https://github.com/urgent-challenge/urgent2024_challenge/blob/main/prepare_espnet_data.sh), you will need to update the codebase and regenerate the DNS5 speech data using the latest codebase.
-* Before rerunning, some itermediate files need to be removed:
+* Before rerunning, some intermediate files need to be removed:
     > ```bash
     > rm tmp/dns5_clean_read_speech*
     > rm -r dns5_fullband/Track1_Headset/resampled/

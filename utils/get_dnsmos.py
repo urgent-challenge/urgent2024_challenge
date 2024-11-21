@@ -47,6 +47,7 @@ def get_dnsmos(data, dnsmos_model):
             audio, fs = sf.read(dic["audio_path"])
             if fs != 16000:
                 audio = librosa.resample(audio, orig_sr=fs, target_sr=16000)
+                fs = 16000
             prev_audio_path = dic["audio_path"]
             prev_audio = audio
         if "start" in dic and "end" in dic:
@@ -57,10 +58,10 @@ def get_dnsmos(data, dnsmos_model):
             with torch.no_grad():
                 dnsmos_score = dnsmos_model(audio, fs)
         dnsmos[uid] = {
-            f"OVRL": float(dnsmos_score["OVRL"]),
-            f"SIG": float(dnsmos_score["SIG"]),
-            f"BAK": float(dnsmos_score["BAK"]),
-            f"P808_MOS": float(dnsmos_score["P808_MOS"]),
+            "OVRL": float(dnsmos_score["OVRL"]),
+            "SIG": float(dnsmos_score["SIG"]),
+            "BAK": float(dnsmos_score["BAK"]),
+            "P808_MOS": float(dnsmos_score["P808_MOS"]),
         }
     return dnsmos
 
@@ -75,7 +76,7 @@ if __name__ == "__main__":
         "--json_path",
         type=str,
         required=True,
-        help="Path to the json file containing audio information of VoxCeleb data",
+        help="Path to the scp/json file containing audio information of the audio data",
     )
     group.add_argument(
         "--outfile",
