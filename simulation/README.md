@@ -28,7 +28,7 @@ If you want to simulate paired degraded-clean speech data using your custom conf
     #----- Define the args below -----
     ext = "wav"
     corpus_name = "xxx"
-    corpus_dir = "/path/to/your/speech/corpus"
+    corpus_dir = "/path/to/your/speech/or/noise/or/rir/corpus"
     #---------------------------------
 
     audios = Path(corpus_dir).rglob(f"*.{ext}")
