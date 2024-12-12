@@ -119,6 +119,8 @@ If you want to simulate paired degraded-clean speech data using your custom conf
     ```
 3. Simulate the paired degraded-clean speech data using the following command:
     > This step generates the paired degraded-clean speech data based on the simulation configuration file generated in step 2.
+    >
+    > The total number of simulated samples will be `$repeat_per_utt` × number of source speech samples.
 
     ```bash
     # Replace "conf/simulation_train.yaml" with your custom configuration
