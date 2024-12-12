@@ -80,7 +80,7 @@ If you want to simulate paired degraded-clean speech data using your custom conf
     # If you don't need reverberation, simply use
     #
     # rir_scps: null
-    rir_scps
+    rir_scps:
     - /path/to/rir_corpus1.scp
     - /path/to/rir_corpus2.scp
     - ...
@@ -92,6 +92,7 @@ If you want to simulate paired degraded-clean speech data using your custom conf
     # augmentations: [none]
     # weight_augmentations: [1.0]
     
+    # Additional random augmentations to be applied to each simulated sample
     augmentations:
     - none  # the first augmentation (do nothing)
     - bandwidth_limitation  # the first augmentation (bandwidth limitation)
