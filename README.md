@@ -1,5 +1,6 @@
 # urgent2024_challenge
 Official data preparation scripts for the [URGENT 2024 Challenge](https://urgent-challenge.github.io/urgent2024/)
+> For training the official baseline based on the prepared data, please refer to [https://urgent-challenge.github.io/urgent2024/baseline/](https://urgent-challenge.github.io/urgent2024/baseline/).
 
 ## Notes
 
