@@ -243,6 +243,17 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_dnsmos/DNSMOS_OVRL.${i}.scp
         done > "${output_prefix}"/scoring_dnsmos/DNSMOS_OVRL.scp
+
+        python - <<EOF
+    scores = []
+    with open("${output_prefix}/scoring_dnsmos/DNSMOS_OVRL.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split()
+            scores.append(float(score))
+    mean_score = np.nanmean(scores)
+    with open("${output_prefix}/scoring_dnsmos/RESULTS.txt", "w") as out:
+        out.write(scp + f": {mean_score:.4f}\n")
+    EOF
     fi
     ```
 
@@ -290,6 +301,17 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_nisqa/NISQA_MOS.${i}.scp
         done > "${output_prefix}"/scoring_nisqa/NISQA_MOS.scp
+
+        python - <<EOF
+    scores = []
+    with open("${output_prefix}/scoring_nisqa/NISQA_MOS.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split()
+            scores.append(float(score))
+    mean_score = np.nanmean(scores)
+    with open("${output_prefix}/scoring_nisqa/RESULTS.txt", "w") as out:
+        out.write(scp + f": {mean_score:.4f}\n")
+    EOF
     fi
     ```
 
@@ -337,6 +359,17 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_speech_bert_score/SpeechBERTScore.${i}.scp
         done > "${output_prefix}"/scoring_speech_bert_score/SpeechBERTScore.scp
+
+        python - <<EOF
+    scores = []
+    with open("${output_prefix}/scoring_speech_bert_score/SpeechBERTScore.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split()
+            scores.append(float(score))
+    mean_score = np.nanmean(scores)
+    with open("${output_prefix}/scoring_speech_bert_score/RESULTS.txt", "w") as out:
+        out.write(scp + f": {mean_score:.4f}\n")
+    EOF
     fi
     ```
 
@@ -384,6 +417,17 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_speaker_similarity/SpeakerSimilarity.${i}.scp
         done > "${output_prefix}"/scoring_speaker_similarity/SpeakerSimilarity.scp
+
+        python - <<EOF
+    scores = []
+    with open("${output_prefix}/scoring_speaker_similarity/SpeakerSimilarity.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split()
+            scores.append(float(score))
+    mean_score = np.nanmean(scores)
+    with open("${output_prefix}/scoring_speaker_similarity/RESULTS.txt", "w") as out:
+        out.write(scp + f": {mean_score:.4f}\n")
+    EOF
     fi
     ```
 
@@ -431,6 +475,17 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_phoneme_similarity/PhonemeSimilarity.${i}.scp
         done > "${output_prefix}"/scoring_phoneme_similarity/PhonemeSimilarity.scp
+
+        python - <<EOF
+    scores = []
+    with open("${output_prefix}/scoring_phoneme_similarity/PhonemeSimilarity.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split()
+            scores.append(float(score))
+    mean_score = np.nanmean(scores)
+    with open("${output_prefix}/scoring_phoneme_similarity/RESULTS.txt", "w") as out:
+        out.write(scp + f": {mean_score:.4f}\n")
+    EOF
     fi
     ```
 
@@ -480,6 +535,25 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         for i in $(seq ${nj}); do
             cat "${output_prefix}"/scoring_wer/WER.${i}.scp
         done > "${output_prefix}"/scoring_wer/WER.scp
+
+    python - <<EOF
+    dic = {"delete": 0, "insert": 0, "replace": 0, "equal": 0}
+    with open("${output_prefix}/scoring_wer/WER.scp", "r") as f:
+        for line in f:
+            uid, score = line.strip().split(maxsplit=1)
+            score = json.loads(score)
+            if not score:
+                continue
+            for k in dic.keys():
+                dic[k] = dic[k] + score[k]
+    numerator = dic["replace"] + dic["delete"] + dic["insert"]
+    denominator = dic["replace"] + dic["delete"] + dic["equal"]
+    wer = numerator / denominator
+    with open("${output_prefix}/scoring_wer/RESULTS.txt", "w") as out:
+        out.write(f"WER: {wer:.4f}\n")
+        for op, count in dic.items():
+            out.write(f"    {op}: {count}\n")
+    EOF
     fi
     ```
 
