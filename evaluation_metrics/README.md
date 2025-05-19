@@ -20,14 +20,14 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
     <td class="tg-51oy">❌</td>
     <td class="tg-51oy">16 kHz</td>
     <td class="tg-51oy">[1, 5]</td>
-    <td class="tg-51oy">CPU</td>
+    <td class="tg-51oy">CPU or GPU</td>
 </tr>
 <tr>
     <td class="tg-0a7q"><a href="calculate_nonintrusive_nisqa.py">NISQA</a> ↑</td>
     <td class="tg-xwyw"><span style="font-weight:400;font-style:normal;text-decoration:none">❌</span></td>
     <td class="tg-xwyw">48 kHz</td>
     <td class="tg-xwyw">[1, 5]</td>
-    <td class="tg-xwyw">CPU</td>
+    <td class="tg-xwyw">CPU or GPU</td>
 </tr>
 <tr>
     <td class="tg-kyy7" rowspan="6">Intrusive SE metrics</td>
