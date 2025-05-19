@@ -2,27 +2,6 @@
 
 This folder contains the objective evaluation metrics used in the URGENT Challenge. The metrics are used to evaluate the performance of the models on the evaluation datasets. The metrics include:
 
-<style type="text/css">
-    .tg  {border:none;border-collapse:collapse;border-color:#ccc;border-spacing:0;}
-    .tg td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:0px;color:#333;
-    font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
-    .tg th{background-color:#f0f0f0;border-color:#ccc;border-style:solid;border-width:0px;color:#333;
-    font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-    .tg .tg-r2ra{background-color:#f9f9f9;border-color:inherit;text-align:left;vertical-align:middle}
-    .tg .tg-51oy{background-color:#ffffff;border-color:#inherit;text-align:center;vertical-align:middle}
-    .tg .tg-rt8k{background-color:#ffffff;border-color:#inherit;text-align:left;vertical-align:middle}
-    .tg .tg-uzvj{border-color:inherit;font-weight:bold;text-align:center;vertical-align:middle}
-    .tg .tg-g7sd{border-color:inherit;font-weight:bold;text-align:left;vertical-align:middle}
-    .tg .tg-r6l2{background-color:#ffffff;border-color:inherit;text-align:center;vertical-align:middle}
-    .tg .tg-0a7q{border-color:#inherit;text-align:left;vertical-align:middle}
-    .tg .tg-xwyw{border-color:#inherit;text-align:center;vertical-align:middle}
-    .tg .tg-kyy7{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:middle}
-    .tg .tg-d459{background-color:#f9f9f9;border-color:inherit;text-align:left;vertical-align:middle}
-    .tg .tg-ligs{background-color:#f9f9f9;border-color:inherit;text-align:center;vertical-align:middle}
-    .tg .tg-rq3n{background-color:#ffffff;border-color:inherit;text-align:center;vertical-align:middle}
-    .tg .tg-mfxt{background-color:#ffffff;border-color:inherit;text-align:left;vertical-align:middle}
-    .tg .tg-qmuc{background-color:#ffffff;border-color:inherit;text-align:left;vertical-align:middle}
-</style>
 <table class="tg">
 <thead>
 <tr>
