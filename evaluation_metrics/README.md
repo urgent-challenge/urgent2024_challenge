@@ -167,10 +167,11 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
     ...
     |fileid_1000|...|&lt;not-available&gt;|
 
-    > [!NOTE]  
-    > The `id` column should match the IDs defined in the first column of the scp files. The `text` column should contain the transcriptions of the clean reference signals. The `...` columns can be any other columns (if available) in the `meta.tsv` file.
-    >
-    > Samples with the `text` column filled with `<not-available>` will be ignored during the WER evaluation.
+> [!NOTE]
+> 
+> The `id` column should match the IDs defined in the first column of the scp files. The `text` column should contain the transcriptions of the clean reference signals. The `...` columns can be any other columns (if available) in the `meta.tsv` file.
+>
+> Samples with the `text` column filled with `<not-available>` will be ignored during the WER evaluation.
 
 3. Run the evaluation script with the following command:
 
