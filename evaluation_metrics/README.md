@@ -126,7 +126,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         └── ...
     ```
 
-2. Prepare the scp files for both enhanced and clean reference signals. The scp files should contain the paths to the audio files and their corresponding sampling frequencies. The scp files should look like this:
+2. Prepare the scp files for both enhanced and clean reference signals. Each row in the scp files should contain two columns: the unique utterance ID and the corresponding path to the audio file. The scp files should look like this:
     ```
     # enhanced.scp
     fileid_1 /path/to/your/data/enhanced/fileid_1.flac
@@ -150,7 +150,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
         LC_ALL=C sort -u > reference.scp
     ```
 
-    For WER evaluation, you will need to additional provide the reference text file. The text file should contain the transcriptions of the clean reference signals. The text file should look like this:
+    For WER evaluation, you will need to additional provide the reference text file. The text file should contain two columns: the unique utterance ID and the corresponding transcription of the clean reference signal. The text file should look like this:
     ```
     # reference.text
     fileid_1 This is the transcription of the first speech sample
