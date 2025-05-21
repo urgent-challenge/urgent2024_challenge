@@ -182,7 +182,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
     nj=16  # Number of parallel CPU jobs for speedup
     python=python3
 
-    output_prefix=scoring_results
+    output_prefix=outdir
 
     # PESQ, ESTOI, SDR, MCD, LSD
     ${python} calculate_intrusive_se_metrics.py \
@@ -212,6 +212,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
 
     ref_scp=reference.scp
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     mkdir -p DNSMOS/
     wget -c -O DNSMOS/sig_bak_ovr.onnx https://github.com/microsoft/DNS-Challenge/raw/refs/heads/master/DNSMOS/DNSMOS/sig_bak_ovr.onnx
@@ -252,7 +253,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
             scores.append(float(score))
     mean_score = np.nanmean(scores)
     with open("${output_prefix}/scoring_dnsmos/RESULTS.txt", "w") as out:
-        out.write(scp + f": {mean_score:.4f}\n")
+        out.write(f"DNSMOS_OVRL: {mean_score:.4f}\n")
     EOF
     fi
     ```
@@ -276,6 +277,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
 
     ref_scp=reference.scp
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     pids=() # initialize pids
     for idx in $(seq ${nj}); do
@@ -310,7 +312,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
             scores.append(float(score))
     mean_score = np.nanmean(scores)
     with open("${output_prefix}/scoring_nisqa/RESULTS.txt", "w") as out:
-        out.write(scp + f": {mean_score:.4f}\n")
+        out.write(f"NISQA_MOS: {mean_score:.4f}\n")
     EOF
     fi
     ```
@@ -334,6 +336,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
 
     ref_scp=reference.scp
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     pids=() # initialize pids
     for idx in $(seq ${nj}); do
@@ -368,7 +371,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
             scores.append(float(score))
     mean_score = np.nanmean(scores)
     with open("${output_prefix}/scoring_speech_bert_score/RESULTS.txt", "w") as out:
-        out.write(scp + f": {mean_score:.4f}\n")
+        out.write(f"SpeechBERTScore: {mean_score:.4f}\n")
     EOF
     fi
     ```
@@ -392,6 +395,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
 
     ref_scp=reference.scp
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     pids=() # initialize pids
     for idx in $(seq ${nj}); do
@@ -426,7 +430,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
             scores.append(float(score))
     mean_score = np.nanmean(scores)
     with open("${output_prefix}/scoring_speaker_similarity/RESULTS.txt", "w") as out:
-        out.write(scp + f": {mean_score:.4f}\n")
+        out.write(f"SpeakerSimilarity: {mean_score:.4f}\n")
     EOF
     fi
     ```
@@ -450,6 +454,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
 
     ref_scp=reference.scp
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     pids=() # initialize pids
     for idx in $(seq ${nj}); do
@@ -484,7 +489,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
             scores.append(float(score))
     mean_score = np.nanmean(scores)
     with open("${output_prefix}/scoring_phoneme_similarity/RESULTS.txt", "w") as out:
-        out.write(scp + f": {mean_score:.4f}\n")
+        out.write(f"PhonemeSimilarity: {mean_score:.4f}\n")
     EOF
     fi
     ```
@@ -510,6 +515,7 @@ This folder contains the objective evaluation metrics used in the URGENT Challen
     # Alternatively, you can also use the "meta.tsv" file for `ref_text`
     # ref_text=/path/to/meta.tsv
     inf_scp=enhanced.scp
+    output_prefix=outdir
 
     pids=() # initialize pids
     for idx in $(seq ${nj}); do
